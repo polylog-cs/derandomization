@@ -43,6 +43,40 @@ class Playground(Scene):
 class TheoremStatement(Scene):
     def construct(self):
         set_default_colors()
+
+        h = 2.5
+        people = Group(*[
+            Group(
+                ImageMobject("img/" + str + ".jpg").scale_to_fit_height(h),
+                Tex(name, color=text_color, font_size=35),
+            ).arrange(DOWN)
+            for str, name in zip(
+                ["wigderson", "nisan", "blum", "micali", "yao"],
+                ["Avi Wigderson", "Noam Nisan", "Manuel Blum", "Silvio Micali", "Andy Yao"],
+            )
+        ]).arrange(RIGHT, buff=0.3)
+        
+        for i in range(2):
+            if i == 0: 
+                r = range(0, 2)
+            else:
+                r = range(2, len(people)) 
+            self.play(
+                AnimationGroup(
+                    *[
+                        arrive_from(people[i], RIGHT)
+                        for i in r
+                    ],
+                    lag_ratio=0.31,
+                )
+            )
+            self.wait()
+        # fade out all people
+        self.play(
+            *[FadeOut(p) for p in people[2:]],
+            Group(*people[:2]).animate.scale(0.7).to_corner(UL),
+            )
+        self.wait()
         hypothesis, conclusion = [
             Tex(t, color=text_color, font_size=50)
             for i, t in enumerate(
@@ -54,7 +88,7 @@ class TheoremStatement(Scene):
                 ]
             )
         ]
-        Group(hypothesis, conclusion).arrange(DOWN)
+        Group(hypothesis, conclusion).arrange(DOWN).shift(1*DOWN)
 
         self.play(Write(hypothesis))
         self.play(Write(conclusion))
