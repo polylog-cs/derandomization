@@ -38,3 +38,45 @@ class Polylogo(Scene):
 class Playground(Scene):
     def construct(self):
         pass
+
+
+class TheoremStatement(Scene):
+    def construct(self):
+        set_default_colors()
+        hypothesis, conclusion = [
+            Tex(t, color=text_color, font_size=50)
+            for i, t in enumerate(
+                [
+                    "Under some assumptions that most people believe,",
+                    r"any problem that can be solved\\"
+                    r"efficiently with randomness\\"
+                    r"can also be solved efficiently without it.",
+                ]
+            )
+        ]
+        Group(hypothesis, conclusion).arrange(DOWN)
+
+        self.play(Write(hypothesis))
+        self.play(Write(conclusion))
+        self.wait()
+
+        self.play(
+            conclusion.animate.become(
+                Tex("$P = BPP$", color=text_color, font_size=80).shift(DOWN * 0.3)
+            ),
+        )
+        self.wait()
+        hypothesis_formal_str = (
+            r"If there is a problem solvable in time $2^{n}$\\"
+            "that cannot be solved  with a circuit "
+            "of size $2^{0.0001n}$,"
+        )
+        hypothesis_formal = Tex(
+            hypothesis_formal_str, color=text_color, font_size=50
+        ).shift(UP)
+
+        hypothesis_original = hypothesis.copy()
+        self.play(hypothesis.animate.become(hypothesis_formal))
+        self.wait()
+        self.play(hypothesis.animate.become(hypothesis_original))
+        self.wait()

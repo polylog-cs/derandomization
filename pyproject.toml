@@ -14,5 +14,6 @@ ignore = [
 ]
 
 select = [
-    "I" # Sort imports
+    "I", # Sort imports
+    "F401", # Remove unused imports
 ]
