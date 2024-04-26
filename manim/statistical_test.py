@@ -185,7 +185,7 @@ class FeedMePi(Scene):
         )
         self.funnel.feed_string(self, subpi, True, talking=tex)
 
-        self.play(FadeOut(self.pi))
+        self.play(FadeOut(pi))
 
         VGroup(self.funnel.ticks, self.funnel.random).set_opacity(0)
         self.play(FadeOut(self.funnel))
