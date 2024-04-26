@@ -1,6 +1,6 @@
-from manim import *
 from utils.util_general import BASE00, BASE2, BLUE, set_default_colors
 
+from manim import *
 
 set_default_colors()
 
