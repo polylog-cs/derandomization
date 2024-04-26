@@ -1,10 +1,10 @@
-#manim -pql --fps 15 -r 290,180 anims.py Polylogo
+# manim -pql --fps 15 -r 290,180 anims.py Polylogo
 from utils.util_general import *
 
 
 class Polylogo(Scene):
     def construct(self):
-        default()
+        set_default_colors()
         authors = Tex(
             r"\textbf{Richard Hladík, Filip Hlásek, Václav Rozhoň, Václav Volhejn}",
             color=text_color,
@@ -33,10 +33,8 @@ class Polylogo(Scene):
 
         self.play(*[FadeOut(o) for o in self.mobjects])
         self.wait()
-        
 
 
 class Playground(Scene):
     def construct(self):
         pass
-
