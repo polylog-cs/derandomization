@@ -10,6 +10,7 @@ random.seed(0)
 def set_default_colors():
     VMobject.set_default(color=GRAY)
     Polygon.set_default(color=RED)
+    Text.set_default(color=TEXT_COLOR)
     # SurroundingRectangle.set_default(color = RED)
     # SurroundingRectangle.set_default(fill_color = config.background_color)
     # SurroundingRectangle.set_default(fill_opacity = 1)
@@ -122,3 +123,4 @@ BACKGROUND_COLOR_DARK = BASE02
 BACKGROUND_COLOR = BACKGROUND_COLOR_LIGHT
 
 config.max_files_cached = 1000
+set_default_colors()
