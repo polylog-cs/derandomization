@@ -16,6 +16,19 @@ def set_default_colors():
     # SurroundingRectangle.set_default(fill_opacity = 1)
 
 
+def make_code(text):
+    return Code(
+        code=text,
+        language="Python",
+        tab_width=4,
+        style="solarized-light",
+        insert_line_no=False,
+        font_size=24,
+        #        margin=0.15,
+        line_spacing=0.6,
+    )
+
+
 ############### GENERATING SOUNDS
 # self.add_sound(file_name)
 

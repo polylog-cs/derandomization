@@ -116,6 +116,20 @@ class TheoremStatement(Scene):
         self.wait()
 
 
+class ShowCode(Scene):
+    def construct(self):
+        text = Path("../code/get_random_bits.py").read_text()
+        self.add(make_code(text))
+        self.wait(5)
+
+
+class ShowCode(Scene):
+    def construct(self):
+        text = Path("../code/get_random_bits.py").read_text()
+        self.add(make_code(text))
+        self.wait(5)
+
+
 fs = 50
 class PolynomialsIntro(Scene):
     def construct(self):
