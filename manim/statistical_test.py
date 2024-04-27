@@ -2,7 +2,18 @@ from utils.util_general import *
 
 
 class Funnel(VGroup):
-    def __init__(self, stem_width=1.5, stem_height=1, funnel_width=6, funnel_height=1):
+    def __init__(
+        self,
+        label: VMobject = None,
+    ):
+        stem_width = 1.5
+        stem_height = 1
+        funnel_width = 6
+        funnel_height = 1.5
+        if label is None:
+            label = Dot(radius=0, fill_opacity=0, stroke_opacity=0)
+        if type(label) == str:
+            label = Tex(label, color=BASE01).scale(1.2)
         super().__init__()
         self.color = BASE1
         poly_list = [
@@ -44,18 +55,27 @@ class Funnel(VGroup):
             .set_opacity(0)
             .set_z_index(2)
             .scale(1.5)
-            .move_to(self.poly)
+            .align_to(self.poly, DOWN)
+            .shift(0.1 * UP)
         )
         self.wheel.stroke_width = self.wheel.background_stroke_width = (
             self.wheel.sheen_factor
         ) = 0
         self.add(self.wheel)
+        self.label = label.set_z_index(2).align_to(self.poly, UP).shift(0.3 * DOWN)
+        self.add(self.label)
 
     def verdict(self, scene, verdict):
         tick = self.ticks[verdict].set_opacity(1)
-        scene.play(FadeIn(tick, shift=DOWN, scale=0.3))
-        is_random = self.random[verdict].set_opacity(1)
-        scene.play(FadeIn(is_random))
+        is_random = self.random[verdict]
+        scene.play(
+            FadeIn(tick, shift=DOWN, scale=0.3),
+            Succession(
+                Wait(0.5),
+                is_random.animate(run_time=0.001).set_opacity(1),
+                FadeIn(is_random),
+            ),
+        )
         scene.wait(1)
         return FadeOut(VGroup(tick, is_random))
 
@@ -75,6 +95,8 @@ class Funnel(VGroup):
         angular_velocity = -1.5
         cutoff = 0.5
         run_time = 3
+        if type(talking) == str:
+            talking = Tex(talking, tex_environment=None)
 
         def fn(obj: VMobject, alpha):
             seconds = alpha * run_time
@@ -85,7 +107,7 @@ class Funnel(VGroup):
 
         anims = []
         if talking:
-            run_time = 6
+            run_time = 5
             hey = VGroup(talking.next_to(self.wheel).shift(0.6 * DOWN + 1.5 * RIGHT))
             hey.add(
                 ArcBetweenPoints(
@@ -118,26 +140,48 @@ class Funnel(VGroup):
         scene.play(Write(string))
         return string
 
-    def feed_string(self, scene, string, verdict, talking=None):
+    def feed_string(
+        self, scene, string, verdict, talking=None, disappear=True, think=True
+    ):
         if type(string) == str:
             string = self.make_string(scene, string)
         copy = string.copy()
         scene.add(copy)
         scene.play(self.eat_string(string))
-        scene.play(self.thinking(talking))
-        scene.play(self.verdict(scene, verdict), FadeOut(copy))
-        scene.play(FadeOut(string))
+        if think:
+            scene.play(self.thinking(talking))
+        anims = [self.verdict(scene, verdict), FadeOut(string)]
+        if disappear:
+            anims.append(FadeOut(copy))
+        scene.play(*anims)
+        self.random.set_opacity(0)
+        self.ticks.set_opacity(0)
+        return copy
 
 
 class StatisticalTest(Scene):
     def construct(self):
-        funnel = Funnel()
+        funnel = Funnel("\#0 : \#1")
         self.add(funnel)
         self.play(Write(funnel))
-        funnel.feed_string(self, "00000000", False)
-        funnel.feed_string(self, "1010110010111", True)
-        funnel.feed_string(self, "010101010101", False)
-        self.play(FadeOut(funnel))
+        funnel.feed_string(self, "00000000", False, talking=r"0: 100\,\%\\1: 0\,\%")
+        funnel.feed_string(
+            self, "1010110010110", True, talking=r"0: 46.2\,\%\\1: 53.8\,\%"
+        )
+        string = funnel.feed_string(
+            self,
+            "1010101010101",
+            True,
+            disappear=False,
+            talking=r"0: 46.2\,\%\\1: 53.8\,\%",
+        )
+        funnel2 = Funnel(
+            r"2-grams",
+        ).move_to(funnel)
+        self.play(FadeOut(funnel, shift=5 * LEFT), FadeIn(funnel2, shift=5 * LEFT))
+        funnel2.feed_string(
+            self, string, False, talking=r"00: 0\,\%\\01: 50\,\%\\10: 50\,\%\\11: 0\%"
+        )
         self.wait(5)
 
 
