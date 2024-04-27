@@ -51,8 +51,8 @@ class TheoremStatement(Scene):
                 Tex(name, color=text_color, font_size=35),
             ).arrange(DOWN)
             for str, name in zip(
-                ["wigderson", "nisan", "blum", "micali", "yao"],
-                ["Avi Wigderson", "Noam Nisan", "Manuel Blum", "Silvio Micali", "Andy Yao"],
+                ["nisan", "wigderson", "blum", "micali", "yao"],
+                ["Noam Nisan", "Avi Wigderson", "Manuel Blum", "Silvio Micali", "Andy Yao"],
             )
         ]).arrange(RIGHT, buff=0.3)
         
@@ -96,7 +96,7 @@ class TheoremStatement(Scene):
 
         self.play(
             conclusion.animate.become(
-                Tex("$P = BPP$", color=text_color, font_size=80).shift(DOWN * 0.3)
+                Tex("$P = BPP$", color=text_color, font_size=80).shift(DOWN * 0.3).shift(1*DOWN)
             ),
         )
         self.wait()
@@ -107,7 +107,7 @@ class TheoremStatement(Scene):
         )
         hypothesis_formal = Tex(
             hypothesis_formal_str, color=text_color, font_size=50
-        ).shift(UP)
+        ).shift(UP).shift(1*DOWN)
 
         hypothesis_original = hypothesis.copy()
         self.play(hypothesis.animate.become(hypothesis_formal))
