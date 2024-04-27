@@ -203,13 +203,10 @@ class PolynomialsIntro2(Scene):
                 Tex(str, color=text_color, font_size=fs)
                 for str in [
                     r"{{$($}}{{$x$}}{{$+1)^{10\,000}($}}{{$x$}}{{$+2)^{20\,000}$}}{{$\;$}}",
-                    r"{{$($}}{{$x$}}{{${}^3 + 5$}}{{$x$}}{{${}^2 + 8$}}{{$x$}}{{$ + 5)^{10000}$}}",
+                    r"{{$($}}{{$x$}}{{${}^3 + 5\cdot$}}{{$x$}}{{${}^2 + 8\cdot$}}{{$x$}}{{$ + 5)^{10000}$}}{{$\;$}}",
                 ]
             ]
         ).arrange(DOWN, buff=1)
-        same_poly = Tex(
-            r"{{$(x^3 + 5x^2 + 8x + 4)^{10000}$}}", color=text_color, font_size=fs
-        ).move_to(polynomials[1])
 
         self.play(
             AnimationGroup(
@@ -242,28 +239,113 @@ class PolynomialsIntro2(Scene):
 
         self.wait()
 
+        val1 = ((test_int + 1) ** 10000) % (10**9 + 7)
+        val2 = ((test_int + 2) ** 20000) % (10**9 + 7)
+        val3 = val1 * val2 % (10**9 + 7)
+        val4 = (test_int**3 + 5 * test_int**2 + 8 * test_int + 5) % (10**9 + 7)
+        val5 = val4**10000 % (10**9 + 7)
+
         p1 = [
             Tex(str, color=text_color, font_size=fs).move_to(polynomials[0])
             for str in [
                 r"{{$($}}{{$42987$}}{{$+1)^{10\,000}($}}{{$42987$}}{{$+2)^{20\,000}$}}{{$\;$}}",
-                r"{{$($}}{{$42987$}}{{$+1)^{10\,000}($}}{{$42987$}}{{$+2)^{20\,000}$}}$\;\;\;\; \mod 10^9+7$",
+                r"{{$($}}{{$42987$}}{{$+1)^{10\,000}($}}{{$42987$}}{{$+2)^{20\,000}$}}{{$\;\;\;\; \mod 10^9+7$}}",
+                r"{{$\,$}}{{$"
+                + str(val1)
+                + r"$}}{{$\,\cdot\,($}}{{$42987$}}{{$+2)^{20\,000}$}}{{$\;\;\;\; \mod 10^9+7$}}",
+                r"{{$\,$}}{{$"
+                + str(val1)
+                + r"$}}{{$\,\cdot\, $}}{{"
+                + str(val2)
+                + r"}}{{$\,$}}{{$\;\;\;\; \mod 10^9+7$}}",
+                r"{{ }}{{$"
+                + str(val3)
+                + r"$}}{{ }}{{ }}{{ }}{{$\;\;\;\; \mod 10^9+7$}}",
             ]
         ]
-
-        self.play(
-            Transform(polynomials[0], p1[0]),
-        )
-        self.play(
-            Transform(polynomials[0], p1[1]),
-        )
 
         p2 = [
             Tex(str, color=text_color, font_size=fs).move_to(polynomials[1])
             for str in [
-                r"{{$(x^2 + 6x + 8)(x-1)$}}{{$ - $}}{{$10x^2 + 8x$}}",
-                r"{{$x^3 + 5x^2 + 2x - 8$}}{{$ - $}}{{$10x^2 + 8x$}}",
-                r"{{$x^3 - 5x^2 + 10x - 8$}}",
+                r"{{$($}}{{$42987$}}{{${}^3 + 5\cdot$}}{{$42987$}}{{${}^2 + 8\cdot$}}{{$42987$}}{{$ + 5)^{10000}$}}{{$\;$}}",
+                r"{{$($}}{{$42987$}}{{${}^3 + 5\cdot$}}{{$42987$}}{{${}^2 + 8\cdot$}}{{$42987$}}{{$ + 5)^{10000}$}}{{$\;\;\;\; \mod 10^9+7$}}",
+                r"{{$($}}{{$"
+                + str(val4)
+                + "$}}{{$ $}}{{$ $}}{{$ $}}{{$ $}}{{$ )^{10000}$}}{{$\;\;\;\; \mod 10^9+7$}}",
+                r"{{ }}{{$"
+                + str(val5)
+                + "$}}{{$ $}}{{$ $}}{{$ $}}{{$ $}}{{$ $}}{{$\;\;\;\; \mod 10^9+7$}}",
             ]
         ]
 
-        self.wait(10)
+        num_copies = [random_ints_tex[0].copy() for _ in range(5)]
+
+        self.play(
+            FadeOut(random_ints_tex[0]),
+            Transform(polynomials[0], p1[0]),
+            Transform(polynomials[1], p2[0]),
+            *[
+                num_copies[i].animate.move_to(p1[0][pos])
+                for i, pos in enumerate([1, 3])
+            ],
+            *[
+                num_copies[2 + i].animate.move_to(p2[0][pos])
+                for i, pos in enumerate([1, 3, 5])
+            ],
+        )
+        self.remove(
+            *num_copies,
+        )
+        self.wait()
+
+        self.play(
+            Transform(polynomials[0], p1[1]),
+            Transform(polynomials[1], p2[1]),
+        )
+        self.wait()
+
+        for j in range(3):
+            self.play(
+                Transform(polynomials[0], p1[2 + j]),
+            )
+            self.wait()
+
+        for j in range(2):
+            self.play(
+                Transform(polynomials[1], p2[2 + j]),
+            )
+            self.wait()
+
+        self.play(
+            *[Indicate(polynomials[i][1], color=text_color) for i in range(2)],
+        )
+        self.wait()
+        self.play(
+            polynomials.animate.shift(3 * LEFT),
+        )
+        different = Tex("Different polynomials!", color=RED, font_size=fs).next_to(
+            polynomials, RIGHT, buff=1
+        )
+        self.play(Write(different))
+        self.wait()
+        self.play(
+            FadeOut(different),
+            Transform(
+                polynomials[1],
+                polynomials[0]
+                .copy()
+                .move_to(polynomials[1].get_center())
+                .align_to(polynomials[1], DOWN)
+                .align_to(polynomials[0], LEFT),
+            ),
+        )
+        same = (
+            Tex(r"{{Same polynomial! \\ }}{{(probably)}}", color=GREEN, font_size=fs)
+            .move_to(different)
+            .align_to(different, LEFT)
+        )
+        for i in range(2):
+            self.play(Write(same[i]))
+            self.wait()
+
+        self.wait()
