@@ -197,13 +197,14 @@ class PolynomialsIntro(Scene):
 class PolynomialsIntro2(Scene):
     def construct(self):
         set_default_colors()
+        self.next_section(skip_animations=True)
 
         polynomials = Group(
             *[
                 Tex(str, color=text_color, font_size=fs)
                 for str in [
                     r"{{$($}}{{$x$}}{{$+1)^{10\,000}($}}{{$x$}}{{$+2)^{20\,000}$}}{{$\;$}}",
-                    r"{{$($}}{{$x$}}{{${}^3 + 5\cdot$}}{{$x$}}{{${}^2 + 8\cdot$}}{{$x$}}{{$ + 5)^{10000}$}}{{$\;$}}",
+                    r"{{$($}}{{$x$}}{{${}^3 + 5$}}{{$x$}}{{${}^2 + 8$}}{{$x$}}{{$ + 5)^{10000}$}}{{$\;$}}",
                 ]
             ]
         ).arrange(DOWN, buff=1)
@@ -336,16 +337,126 @@ class PolynomialsIntro2(Scene):
                 .copy()
                 .move_to(polynomials[1].get_center())
                 .align_to(polynomials[1], DOWN)
-                .align_to(polynomials[0], LEFT),
+                .align_to(polynomials[0], LEFT)
+                .shift(2 * UP),
             ),
+            polynomials[0].animate.shift(2 * UP),
         )
+        self.wait()
         same = (
-            Tex(r"{{Same polynomial! \\ }}{{(probably)}}", color=GREEN, font_size=fs)
+            Tex(
+                r"{{Same polynomial! \\ }}{{(probably)\\}}{{probability $>99\%$\\}}",
+                color=GREEN,
+                font_size=fs,
+            )
             .move_to(different)
             .align_to(different, LEFT)
+            .shift(2 * UP)
         )
+
         for i in range(2):
             self.play(Write(same[i]))
             self.wait()
 
+        self.wait()
+
+        simple_polynomials = (
+            Group(
+                *[
+                    Tex(str, color=c, font_size=fs)
+                    for str, c in zip(
+                        [
+                            r"{{$x^2 + 1$}}",
+                            r"{{$x + 1$}}",
+                        ],
+                        [BLUE, BLUE],
+                    )
+                ]
+            )
+            .arrange(DOWN, buff=0.5)
+            .shift(1 * DOWN)
+        )
+
+        p1 = [
+            Tex(str, color=text_color, font_size=fs).move_to(simple_polynomials[0])
+            for str in [r"{{$1^2 + 1$}}", r"{{$2$}}"]
+        ]
+
+        p2 = [
+            Tex(str, color=text_color, font_size=fs).move_to(simple_polynomials[1])
+            for str in [
+                r"{{$1 + 1$}}",
+                r"{{$2$}}",
+            ]
+        ]
+
+        self.play(
+            AnimationGroup(
+                *[FadeIn(p) for p in simple_polynomials],
+                lag_ratio=0.5,
+            )
+        )
+        self.wait()
+
+        # for j in range(2):
+        #     self.play(
+        #         Transform(simple_polynomials[0], p1[j]),
+        #         Transform(simple_polynomials[1], p2[j]),
+        #     )
+        #     self.wait(0.5)
+        # self.wait()
+
+        self.next_section(skip_animations=False)
+
+        # Create axes
+        axes = (
+            Axes(
+                x_range=[-3, 3],
+                y_range=[-5, 10],
+                axis_config={
+                    "include_ticks": False,  # Remove ticks
+                    "include_numbers": False,  # Remove numbers
+                    "color": text_color,
+                },
+                tips=False,
+            )
+            .scale(0.7)
+            .to_edge(DOWN, buff=0.5)
+        )
+
+        # Create the graph
+        graph1 = axes.plot(lambda x: x**2 + 1, color=BLUE)
+        graph2 = axes.plot(lambda x: 3 - x, color=BLUE)
+
+        # Create labels
+        graph_label1 = axes.get_graph_label(graph1, label="x^2+1")
+        graph_label2 = axes.get_graph_label(graph2, label="3-x")
+
+        # Draw the axes and the graph
+        self.play(
+            Create(axes),
+            *[Create(graph) for graph in [graph1, graph2]],
+            simple_polynomials[0]
+            .animate.move_to(graph_label1.get_center())
+            .shift(0 * UP),
+            simple_polynomials[1]
+            .animate.move_to(graph_label2.get_center())
+            .shift(0 * UP),
+        )
+        self.wait(1)  # Wait for 1 second
+
+        intersections = [
+            axes.coords_to_point(-2, 5),  # Point (-2, 5)
+            axes.coords_to_point(1, 2),  # Point (1, 2)
+        ]
+
+        # Create dots at intersections
+        dots = VGroup(*[Dot(point, color=YELLOW) for point in intersections])
+        self.play(*[Flash(dot, color=RED) for dot in dots])
+        self.wait()
+
+        same[2].align_to(same[1], LEFT).align_to(same[1], UP)
+        self.play(
+            Transform(same[1], same[2]),
+        )
         self.wait()
