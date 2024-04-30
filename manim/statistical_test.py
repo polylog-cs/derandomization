@@ -1,4 +1,8 @@
+from prng import *
 from utils.util_general import *
+
+with open("pi.txt") as f:
+    PI = "".join(f.read().split())
 
 
 class Funnel(VGroup):
@@ -68,6 +72,11 @@ class Funnel(VGroup):
     def verdict(self, scene, verdict):
         tick = self.ticks[verdict].set_opacity(1)
         is_random = self.random[verdict]
+        if verdict == 1:
+            scene.add_sound("audio/polylog_success.wav")
+        else:
+            scene.add_sound("audio/polylog_failure.wav")
+
         scene.play(
             FadeIn(tick, shift=DOWN, scale=0.3),
             Succession(
@@ -134,19 +143,26 @@ class Funnel(VGroup):
 
         return AnimationGroup(*anims)
 
-    def make_string(self, scene, string):
+    def make_string(self, scene, string, add_string=True):
         string = Tex(string).scale(1.2)
         string.next_to(self, UP, buff=0.3)
-        scene.play(Write(string))
+        if add_string:
+            scene.play(Write(string))
         return string
 
     def feed_string(
-        self, scene, string, verdict, talking=None, disappear=True, think=True
+        self,
+        scene,
+        string,
+        verdict,
+        talking=None,
+        disappear=True,
+        think=True,
+        add_string=True,
     ):
         if type(string) == str:
-            string = self.make_string(scene, string)
+            string = self.make_string(scene, string, add_string)
         copy = string.copy()
-        scene.add(copy)
         scene.play(self.eat_string(string))
         if think:
             scene.play(self.thinking(talking))
@@ -163,17 +179,22 @@ class StatisticalTest(Scene):
     def construct(self):
         funnel = Funnel("\#0 : \#1")
         self.add(funnel)
+        self.wait()
         self.play(Write(funnel))
-        funnel.feed_string(self, "00000000", False, talking=r"0: 100\,\%\\1: 0\,\%")
+        self.wait()
+
         funnel.feed_string(
-            self, "1010110010110", True, talking=r"0: 46.2\,\%\\1: 53.8\,\%"
+            self, "0000000000000000", False, talking=r"0: 100\,\%\\1: 0\,\%"
+        )
+        funnel.feed_string(
+            self, "1010110010110101", True, talking=r"0: 43.7\,\%\\1: 56.3\,\%"
         )
         string = funnel.feed_string(
             self,
-            "1010101010101",
+            "1010101010101010",
             True,
             disappear=False,
-            talking=r"0: 46.2\,\%\\1: 53.8\,\%",
+            talking=r"0: 50\,\%\\1: 50\,\%",
         )
         funnel2 = Funnel(
             r"2-grams",
@@ -185,18 +206,112 @@ class StatisticalTest(Scene):
         self.wait(5)
 
 
-with open("pi.txt") as f:
-    PI = "".join(f.read().split())
-
-
-class FeedMePi(Scene):
+class Pi(Scene):
     def construct(self):
-        self.funnel = Funnel().shift(2 * LEFT)
-        self.add(self.funnel)
-        self.play(Write(self.funnel))
+        funnel_scale = 0.5
+        funnels = (
+            VGroup(
+                Funnel(r"Serial \\ test"),
+                Funnel(r"Gap \\ test"),
+                Funnel(r"Frequency \\ test"),
+                Funnel(r"Partition \\ test"),
+                Funnel(r"Run \\ test"),
+                Funnel(r"Permutation \\ test"),
+            )
+            .arrange_in_grid(rows=2, buff=0.3)
+            .scale(funnel_scale)
+            .to_edge(DOWN, buff=0.5)
+        )
+
+        self.play(
+            AnimationGroup(
+                *[Write(funnel) for funnel in funnels],
+                lag_ratio=0.2,
+            )
+        )
+        self.wait()
+
+        for i, txt in enumerate([r"1010110010110101", r"3141592653589793"]):
+            rand_string_tex = Tex(txt, color=text_color).to_edge(UP, buff=1.5)
+            copies = [rand_string_tex.copy() for funnel in funnels]
+            # for copy, funnel in zip(copies, funnels):
+            #     copy.create_target()
+            #     copy.target.scale(funnel_scale).move_to(funnel).next_to(funnel, UP)
+
+            if i == 1:
+                prng = PRNG().scale(0.6).next_to(rand_string_tex, LEFT, buff=1.5)
+                self.play(Create(prng))
+                self.play(prng.set_seed("."))  # TODO fix
+                prng_ar = Arrow(
+                    start=prng.get_right(),
+                    end=rand_string_tex.get_left(),
+                )
+                self.play(Create(prng_ar))
+
+            self.play(Write(rand_string_tex))
+            self.wait()
+
+            self.play(
+                AnimationGroup(
+                    *[
+                        copy.animate.scale(funnel_scale)
+                        .move_to(funnel)
+                        .next_to(funnel, UP)
+                        for copy, funnel in zip(copies, funnels)
+                    ],
+                    lag_ratio=0.2,
+                )
+            )
+            self.wait()
+
+            ticks = [
+                Text("✓", color=GREEN)
+                .scale_to_fit_height(1)
+                .align_to(funnel, DR)
+                .shift(0.5 * UL)
+                for funnel in funnels
+            ]
+            self.add_sound("audio/polylog_success.wav")
+            self.play(
+                AnimationGroup(
+                    *[FadeIn(tick) for tick in ticks],
+                    lag_ratio=0.2,
+                )
+            )
+            anims = []
+            if i == 0:
+                anims += [FadeOut(rand_string_tex)]
+            if i == 1:
+                anims += [FadeOut(funnel) for funnel in funnels]
+            self.play(
+                *[FadeOut(tick) for tick in ticks],
+                *[FadeOut(copy) for copy in copies],
+                *anims,
+            )
+            self.wait()
+
+        self.funnel = Funnel(r"$\pi$-checking \\ test").shift(2 * DOWN)
+        self.play(FadeIn(self.funnel))
+        self.play(
+            rand_string_tex.animate.scale(1.2).next_to(self.funnel, UP, buff=0.3),
+        )
+        self.wait()
 
         tex = Tex(r"Hey, this is $\pi$!\\That's not random!", tex_environment=None)
-        self.funnel.feed_string(self, "314159265358979", False, talking=tex)
+        self.funnel.feed_string(
+            self, "314159265358979", False, talking=tex, add_string=False
+        )
+
+        self.play(
+            FadeOut(rand_string_tex),
+            FadeOut(self.funnel),
+            Group(prng, prng_ar).animate.shift(3 * RIGHT + 1 * DOWN),
+        )
+        self.play(prng.set_seed("11011001"))
+        self.wait()
+        idx = 217
+        self.play(prng.set_seed(r"$k = 217$"))
+        self.wait()
 
         pi = Tex(r"\hsize=200cm $\pi$ = " + PI[:500]).set_z_index(-1)
         pi.to_edge(UP, buff=0.5)
@@ -212,7 +327,6 @@ class FeedMePi(Scene):
         self.add(hide1, hide2)
         self.play(FadeIn(pi))
 
-        idx = 432
         self.play(
             pi.animate(rate_func=rate_functions.ease_in_out_quart).shift(
                 pi[0][idx].get_center()[0] * LEFT

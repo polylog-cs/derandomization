@@ -205,7 +205,7 @@ class PRNGIntro(Scene):
                         if j % 2 == 0:
                             output_str += "0"
                         else:
-                            output_str += "1"
+                            output_str += "0"
                 output_str += r"\\ "
             out_strs.append(output_str)
 
@@ -250,6 +250,16 @@ class PRNGIntro(Scene):
             output.animate.move_to(ORIGIN),
         )
         self.wait()
+
+        is_tex = Tex(r"Is this random? ", color=text_color).next_to(output, UR, buff=1)
+        ar = Arrow(
+            start=is_tex.get_edge_center(LEFT),
+            end=output.get_corner(UR),
+            color=text_color,
+        )
+        self.play(Write(is_tex), Create(ar))
+        self.wait()
+
         self.play(
             Transform(output, Tex(out_strs[3], color=BASE00).move_to(ORIGIN)),
         )
