@@ -197,7 +197,7 @@ class PolynomialsIntro(Scene):
 class PolynomialsIntro2(Scene):
     def construct(self):
         set_default_colors()
-        self.next_section(skip_animations=True)
+        self.next_section(skip_animations=False)
 
         polynomials = Group(
             *[
@@ -367,7 +367,7 @@ class PolynomialsIntro2(Scene):
                     for str, c in zip(
                         [
                             r"{{$x^2 + 1$}}",
-                            r"{{$x + 1$}}",
+                            r"{{$3 - x$}}",
                         ],
                         [BLUE, BLUE],
                     )
@@ -455,7 +455,7 @@ class PolynomialsIntro2(Scene):
         self.play(*[Flash(dot, color=RED) for dot in dots])
         self.wait()
 
-        same[2].align_to(same[1], LEFT).align_to(same[1], UP)
+        same[2].align_to(same[0], LEFT).align_to(same[1], UP)
         self.play(
             Transform(same[1], same[2]),
         )
