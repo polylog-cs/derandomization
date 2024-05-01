@@ -1,4 +1,4 @@
-from statistical_test import Funnel
+from utils.funnel import Funnel
 from utils.util_general import *
 
 set_default_colors()
