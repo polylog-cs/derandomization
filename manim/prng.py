@@ -149,12 +149,12 @@ class Algo(VGroup):
         else:
             return Write(self.inputs[pos])
 
-    def set_output(self, output: str):
+    def set_output(self, output: str, color=BASE00):
         if not output:
             new_output = nil_object()
         else:
             new_output = (
-                Tex(output, color=BASE00)
+                Tex(output, color=color)
                 .scale(label_scale)
                 .next_to(self.box, RIGHT, buff=1.5)
             )
@@ -182,7 +182,7 @@ class Algo(VGroup):
             # Create the arrow only once most of the text is written
             return LaggedStart(
                 Write(self.inputs[2]),
-                Create(self.arrows[2]),
+                GrowArrow(self.arrows[2]),
                 lag_ratio=0.3,
             )
         else:
@@ -190,6 +190,9 @@ class Algo(VGroup):
 
     def set_label_color(self, color):
         VGroup(*self.inputs, *self.arrows).set_color(color)
+        for arrow in self.arrows:
+            if isinstance(arrow, AnnotatedArrow):
+                arrow.text.set_color(color)
 
 
 class PRNGIntro(Scene):
@@ -287,9 +290,9 @@ class BPP(Scene):
     def construct(self):
         set_default_colors()
 
-        self.next_section(skip_animations=True)
+        # self.next_section(skip_animations=True)
         plan_tex = Tex(
-            r"Pseudorandom generator $\Rightarrow \text{P} = \text{BPP}$.  "
+            r"Pseudorandom generator $\implies \text{P} = \text{BPP}$.  "
         ).shift(2 * UP)
         self.play(Write(plan_tex))
         self.wait()
@@ -411,21 +414,42 @@ class BPP(Scene):
 
         self.next_section()
 
-        algo.set_z_index(5)
         self.play(
             algo.set_input("", 1),
             algo.set_output(""),
             FadeOut(prob_tex),
         )
         self.wait()
-        funnel = Funnel().scale(2).shift(DOWN)
+        funnel = Funnel().scale(2.2 * RIGHT + 1.5 * UP).set_z_index(-1)
+        VGroup(funnel.ticks, funnel.random).scale(1.5 / 2.2 * RIGHT + UP).scale(0.75)
         self.play(
             Write(funnel),
-            algo.animate.scale(0.5)
-            .move_to(funnel.get_top())
-            .shift(DOWN)
-            .set_label_color(BLACK),
+            algo.animate.scale(0.7)
+            .move_to(funnel)
+            .align_to(funnel, UP)
+            .shift(0.2 * DOWN)
+            .set_label_color(BASE03),
         )
+
+        string = funnel.make_string(self, "10100110001")
+        string_copy = string.copy()
+        self.add(string_copy)
+        self.play(
+            string.animate.set_color(BASE03).scale(0.5).next_to(algo.arrows[1], LEFT)
+        )
+        algo.set_output("SAME", color=BASE03)
+        self.play(Write(algo.inputs[2].next_to(algo.arrows[2])))
+        ok_copy = (
+            VGroup(funnel.ticks[0], funnel.random[0])
+            .copy()
+            .set_opacity(1)
+            .shift(0.3 * UP)
+        )
+        verdict_copy = algo.inputs[2].copy()
+        self.play(verdict_copy.animate.become(ok_copy))
+        self.wait()
+
+        return
 
         ### TODO
 
