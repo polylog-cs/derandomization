@@ -2,13 +2,15 @@ from prng import *
 from utils.funnel import *
 from utils.util_general import *
 
+from manim.mobject.svg.brace import BraceText
+
 with open("pi.txt") as f:
     PI = "".join(f.read().split())
 
 
 class StatisticalTest(Scene):
     def construct(self):
-        funnel = Funnel("\#0 : \#1")
+        funnel = Funnel(r"\#0 : \#1")
         self.add(funnel)
         self.wait()
         self.play(Write(funnel))
@@ -78,12 +80,12 @@ class Pi(Scene):
                     .next_to(rand_string_tex, LEFT, buff=1.5)
                 )
                 self.play(Create(prng))
-                self.play(prng.set_seed("."))  # TODO fix
+                self.play(prng.set_seed(None))
                 prng_ar = Arrow(
                     start=prng.get_right(),
                     end=rand_string_tex.get_left(),
                 )
-                self.play(Create(prng_ar))
+                self.play(GrowArrow(prng_ar))
 
             self.play(Write(rand_string_tex))
             self.wait()
@@ -106,6 +108,7 @@ class Pi(Scene):
                 .scale_to_fit_height(1)
                 .align_to(funnel, DR)
                 .shift(0.5 * UL)
+                .set_z_index(10)
                 for funnel in funnels
             ]
             self.add_sound("audio/polylog_success.wav")
@@ -127,7 +130,9 @@ class Pi(Scene):
             )
             self.wait()
 
-        self.funnel = Funnel(r"$\pi$-checking \\ test").shift(1 * DOWN)
+        self.funnel = Funnel(r"\baselineskip=.9em $\pi$-checking\\ test").shift(
+            1 * DOWN
+        )
         self.play(FadeIn(self.funnel))
         self.play(
             rand_string_tex.animate.scale(1.2).next_to(self.funnel, UP, buff=0.3),
@@ -136,8 +141,9 @@ class Pi(Scene):
 
         tex = Tex(r"Hey, this is $\pi$!\\That's not random!", tex_environment=None)
         self.funnel.feed_string(
-            self, "314159265358979", False, talking=tex, add_string=False, side=True
+            self, "3141592653589793", False, talking=tex, add_string=False, side=True
         )
+        self.funnel.set_opacity(1)
 
         self.remove(rand_string_tex)
         self.play(
@@ -283,7 +289,7 @@ class Pi(Scene):
         )
         self.play(
             Write(rand_string_tex),
-            Create(prng_ar),
+            GrowArrow(prng_ar),
         )
         self.wait()
 

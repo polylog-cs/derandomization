@@ -43,13 +43,11 @@ class PRNG(VGroup):
         return AnimationGroup(Create(self.box), Write(self.text))
 
     def set_seed(self, seed: str, buff=1.5):
-        new_seed = (
-            Tex(seed, color=BASE00)
-            .move_to(self.box.get_center())
-            .next_to(self.box, LEFT, buff=buff)
-        )
-        if seed == ".":
-            new_seed.set_opacity(0)
+        if seed is None:
+            new_seed = nil_object()
+        else:
+            new_seed = Tex(seed, color=BASE00)
+        new_seed.move_to(self.box).next_to(self.box, LEFT, buff=buff)
 
         if self.seed is not None:
             old_seed = self.seed
