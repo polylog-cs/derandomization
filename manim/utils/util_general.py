@@ -80,6 +80,10 @@ def arrive_from(obj, dir, buff=0.5):
     return obj.animate.move_to(pos)
 
 
+def nil_object():
+    return Dot(radius=0, fill_opacity=0, stroke_opacity=0)
+
+
 ############### SOLARIZED COLORS
 
 

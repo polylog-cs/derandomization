@@ -15,7 +15,7 @@ class Funnel(VGroup):
         funnel_width = 6
         funnel_height = 1.5
         if label is None:
-            label = Dot(radius=0, fill_opacity=0, stroke_opacity=0)
+            label = nil_object()
         if type(label) == str:
             label = Tex(label, color=BASE01).scale(1.2)
         super().__init__()

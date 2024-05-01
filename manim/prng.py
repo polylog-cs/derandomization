@@ -1,3 +1,4 @@
+from statistical_test import Funnel
 from utils.util_general import *
 
 set_default_colors()
@@ -102,12 +103,15 @@ class Algo(VGroup):
         return AnimationGroup(Create(self.box), Write(self.text))
 
     def set_input(self, input: str, pos: int, no_text=False):
-        new_input = (
-            Tex(input, color=BASE00)
-            .scale(label_scale)
-            .next_to(self.box, LEFT, buff=1.5)
-            .shift((-1 + 2 * pos) * label_scale * self.box.height * 0.5 * DOWN)
-        )
+        if not input:
+            new_input = nil_object()
+        else:
+            new_input = (
+                Tex(input, color=BASE00)
+                .scale(label_scale)
+                .next_to(self.box, LEFT, buff=1.5)
+                .shift((-1 + 2 * pos) * label_scale * self.box.height * 0.5 * DOWN)
+            )
 
         if self.inputs[pos] is not None:
             old_input = self.inputs[pos]
@@ -128,7 +132,9 @@ class Algo(VGroup):
                 + (-1 + 2 * pos) * label_scale * self.box.height * 0.5 * DOWN,
                 color=BASE00,
                 text=(
-                    ("input" if pos == 0 else "randomness") if no_text == False else ""
+                    ("input" if pos == 0 else r"\baselineskip=1em random\\bits")
+                    if no_text == False
+                    else ""
                 ),
                 text_scale=0.8 * label_scale,
             )
@@ -144,11 +150,14 @@ class Algo(VGroup):
             return Write(self.inputs[pos])
 
     def set_output(self, output: str):
-        new_output = (
-            Tex(output, color=BASE00)
-            .scale(label_scale)
-            .next_to(self.box, RIGHT, buff=1.5)
-        )
+        if not output:
+            new_output = nil_object()
+        else:
+            new_output = (
+                Tex(output, color=BASE00)
+                .scale(label_scale)
+                .next_to(self.box, RIGHT, buff=1.5)
+            )
 
         if self.inputs[2] is not None:
             old_output = self.inputs[2]
@@ -179,6 +188,9 @@ class Algo(VGroup):
         else:
             return Write(self.inputs[2])
 
+    def set_label_color(self, color):
+        VGroup(*self.inputs, *self.arrows).set_color(color)
+
 
 class PRNGIntro(Scene):
     def construct(self):
@@ -190,7 +202,7 @@ class PRNGIntro(Scene):
 
         seed_brace = BraceLabel(
             prng.seed,
-            "$O(\log n)$ random bits",
+            r"$O(\log n)$ random bits",
             label_constructor=Tex,
             brace_direction=UP,
             buff=0.4,
@@ -275,6 +287,7 @@ class BPP(Scene):
     def construct(self):
         set_default_colors()
 
+        self.next_section(skip_animations=True)
         plan_tex = Tex(
             r"Pseudorandom generator $\Rightarrow \text{P} = \text{BPP}$.  "
         ).shift(2 * UP)
@@ -283,12 +296,12 @@ class BPP(Scene):
         self.play(FadeOut(plan_tex))
         self.wait()
 
-        algo = Algo().shift(3 * RIGHT)
+        algo = Algo().shift(2 * RIGHT)
 
         self.play(Create(algo))
         self.wait()
 
-        self.play(algo.set_input(r"$(x+1)^2, \; x^2 + 2x + 1$", 0))
+        self.play(algo.set_input(r"$(x+1)^2 \overset{?}{=} x^2 + 2x + 1$", 0))
         self.wait()
 
         self.play(algo.set_input("1010101101100001", 1))
@@ -297,16 +310,17 @@ class BPP(Scene):
         self.play(algo.set_output("SAME"))
         self.wait()
 
-        self.play(algo.set_input(r"$(x+1)^2, \; (x-1)^2$", 0))
+        self.play(algo.set_input(r"$(x+1)^2 \overset{?}{=} (x-1)^2$", 0))
         self.wait()
 
         self.play(algo.set_output("DIFFERENT"))
         self.wait()
 
         prob_tex = (
-            Tex(r"$\ge 99\%$ probability")
+            Tex(r"$p\ge 99\%$")
             .scale(label_scale)
             .next_to(algo.inputs[2], DOWN)
+            .align_to(algo.inputs[2], LEFT)
         )
         self.play(Write(prob_tex))
         self.wait()
@@ -330,7 +344,7 @@ class BPP(Scene):
             .scale(0.7)
             .next_to(prng_algo, LEFT)
             .shift(label_scale * prng_algo.box.height * 0.5 * DOWN)
-            .shift(4.5 * LEFT)
+            .shift(4.2 * LEFT)
         )
         self.play(Create(prng))
         self.wait()
@@ -339,23 +353,27 @@ class BPP(Scene):
         self.wait()
 
         prng_ar = Arrow(
-            start=prng.get_edge_center(RIGHT),
-            end=prng.get_edge_center(RIGHT) + 1 * RIGHT,
+            start=ORIGIN,
+            end=1.0 * RIGHT,
             color=BASE00,
-        )
+        ).shift(prng.get_edge_center(RIGHT) + 0.1 * LEFT)
         self.play(
             prng_algo.set_input("10100110001", 1, no_text=True),
             Create(prng_ar),
         )
         self.wait()
 
-        self.play(prng_algo.set_input(r"$(x+1)^2, \; x^2 + 2x + 1$", 0, no_text=True))
+        self.play(
+            prng_algo.set_input(
+                r"$(x+1)^2 \overset{?}{=} x^2 + 2x + 1$", 0, no_text=True
+            )
+        )
         self.wait()
 
         self.play(prng_algo.set_output("SAME"))
         self.wait()
 
-        self.play(prng_algo.set_input(r"$(x+1)^2, \; (x-1)^2$", 0))
+        self.play(prng_algo.set_input(r"$(x+1)^2 \overset{?}{=} (x-1)^2$", 0))
         self.wait()
 
         self.play(prng_algo.set_output("?"))
@@ -365,9 +383,10 @@ class BPP(Scene):
         self.wait()
 
         prob_tex2 = (
-            Tex(r"$\le 1\%$ probability")
+            Tex(r"$p\le 1\%$")
             .scale(label_scale)
             .next_to(prng_algo.inputs[2], DOWN)
+            .align_to(prng_algo.inputs[2], LEFT)
         )
         self.play(Write(prob_tex2))
         self.wait()
@@ -376,9 +395,10 @@ class BPP(Scene):
             prng_algo.set_output("SAME"),
             Transform(
                 prob_tex2,
-                Tex(r"$\ge 99\%$ probability")
+                Tex(r"p$\ge 99\%$")
                 .scale(label_scale)
-                .next_to(prng_algo.inputs[2], DOWN),
+                .next_to(prng_algo.inputs[2], DOWN)
+                .align_to(prng_algo.inputs[2], LEFT),
             ),
         )
         self.wait()
@@ -388,12 +408,24 @@ class BPP(Scene):
             FadeOut(algo_group2),
             algo_group1.animate.move_to(ORIGIN),
         )
+
+        self.next_section()
+
+        algo.set_z_index(5)
         self.play(
-            algo.set_input(".", 1),  # TODO get rid of the dot
-            algo.set_output("."),
+            algo.set_input("", 1),
+            algo.set_output(""),
             FadeOut(prob_tex),
         )
         self.wait()
+        funnel = Funnel().scale(2).shift(DOWN)
+        self.play(
+            Write(funnel),
+            algo.animate.scale(0.5)
+            .move_to(funnel.get_top())
+            .shift(DOWN)
+            .set_label_color(BLACK),
+        )
 
         ### TODO
 
