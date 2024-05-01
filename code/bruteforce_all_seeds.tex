@@ -1,0 +1,17 @@
+\textbf{input:} $P$, $Q$
+
+\textbf{output:} \texttt{SAME} or \texttt{DIFFERENT}
+
+\medskip
+
+$t = \mathcal O(\log n)$
+
+\textbf{for} \texttt{seed} in $\{0, 1\}^t$:
+
+\quad \texttt{random.seed(seed)}
+
+\quad \textbf{if} $A(P, Q) = \texttt{DIFFERENT}$:
+
+\quad\quad \textbf{return} \texttt{DIFFERENT}
+
+\textbf{return} \texttt{SAME}

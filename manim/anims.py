@@ -1,4 +1,6 @@
 # manim -pql --fps 15 -r 290,180 anims.py Polylogo
+from pathlib import Path
+
 from utils.util_general import *
 
 
@@ -460,3 +462,13 @@ class PolynomialsIntro2(Scene):
             Transform(same[1], same[2]),
         )
         self.wait()
+
+
+class PseudocodeBruteforce(Scene):
+    def construct(self):
+        pseudocode = Tex(
+            Path("../code/bruteforce_all_seeds.tex").read_text(),
+            tex_environment=None,
+        )
+        self.add(pseudocode)
+        self.wait(3)
