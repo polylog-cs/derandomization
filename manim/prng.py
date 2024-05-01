@@ -20,12 +20,15 @@ class AnnotatedArrow(Arrow):
 
 
 class PRNG(VGroup):
-    def __init__(self):
+    def __init__(self, name="PRNG"):
         super().__init__()
         self.box = Rectangle(
             color=BLUE, fill_color=BLUE, fill_opacity=1, width=2.5, height=1.5
         )
-        self.text = Tex("PRNG", color=BASE2)
+        self.text = Tex(name, color=BASE2)
+        if name == "NW":
+            self.text = Tex(r"{{Nissan-Wigderson \\}}{{ PRNG}}", color=BASE2)
+            self.text[0].scale(0.5)
         self.add(self.box)
         self.add(self.text)
 
@@ -44,6 +47,8 @@ class PRNG(VGroup):
             .move_to(self.box.get_center())
             .next_to(self.box, LEFT, buff=buff)
         )
+        if seed == ".":
+            new_seed.set_opacity(0)
 
         if self.seed is not None:
             old_seed = self.seed
