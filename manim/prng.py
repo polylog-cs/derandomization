@@ -6,11 +6,13 @@ label_scale = 0.8
 
 
 class AnnotatedArrow(Arrow):
-    def __init__(self, text: str, *args, text_scale=1, **kwargs):
+    def __init__(self, text: str, *args, text_scale=1, buff=0.25, **kwargs):
         super().__init__(*args, **kwargs)
         # TODO: if needed, position text based on the direction of the arrow
         self.text = (
-            Tex(text, color=BASE00).scale(text_scale).next_to(self.get_center(), UP)
+            Tex(text, color=BASE00)
+            .scale(text_scale)
+            .next_to(self.get_center(), UP, buff=buff)
         )
 
     @override_animation(Create)  # Create(PRNG()) will run this method
@@ -90,7 +92,7 @@ class Algo(VGroup):
         super().__init__()
         self.box = Rectangle(
             color=RED, fill_color=RED, fill_opacity=1, width=2.5, height=1.5
-        )
+        ).scale(0.8)
         self.text = Tex("A", color=BASE2).scale(1.5)
         self.add(self.box)
         self.add(self.text)
@@ -139,6 +141,7 @@ class Algo(VGroup):
                     else ""
                 ),
                 text_scale=0.8 * label_scale,
+                buff=0.15,
             )
             self.add(self.arrows[pos])
             self.add(self.arrows[pos].text)
@@ -151,13 +154,13 @@ class Algo(VGroup):
         else:
             return Write(self.inputs[pos])
 
-    def set_output(self, output: str, color=BASE00):
+    def set_output(self, output: str, color=BASE00, scale=1):
         if not output:
             new_output = nil_object()
         else:
             new_output = (
                 Tex(output, color=color)
-                .scale(label_scale)
+                .scale(label_scale * scale)
                 .next_to(self.box, RIGHT, buff=1.5)
             )
 
@@ -291,6 +294,8 @@ class PRNGIntro(Scene):
 class BPP(Scene):
     def construct(self):
         set_default_colors()
+        COLOR_SAME = GREEN
+        COLOR_DIFFERENT = RED
 
         # self.next_section(skip_animations=True)
         plan_tex = Tex(
@@ -301,7 +306,7 @@ class BPP(Scene):
         self.play(FadeOut(plan_tex))
         self.wait()
 
-        algo = Algo().shift(2 * RIGHT)
+        algo = Algo().shift(3 * RIGHT)
 
         self.play(Create(algo))
         self.wait()
@@ -312,13 +317,13 @@ class BPP(Scene):
         self.play(algo.set_input("1010101101100001", 1))
         self.wait()
 
-        self.play(algo.set_output("SAME"))
+        self.play(algo.set_output("=", color=COLOR_SAME, scale=2))
         self.wait()
 
         self.play(algo.set_input(r"$(x+1)^2 \overset{?}{=} (x-1)^2$", 0))
         self.wait()
 
-        self.play(algo.set_output("DIFFERENT"))
+        self.play(algo.set_output(r"$\ne$", color=COLOR_DIFFERENT, scale=2))
         self.wait()
 
         prob_tex = (
@@ -337,7 +342,7 @@ class BPP(Scene):
         self.play(
             *[FadeOut(algo.arrows[i].text) for i in range(2)],
         )
-        self.remove(*[algo.arrows[i].text for i in range(2)])
+        # self.remove(*[algo.arrows[i].text for i in range(2)])
         self.wait()
 
         prng_algo = Algo().shift(DOWN).shift(3 * RIGHT)
@@ -364,7 +369,7 @@ class BPP(Scene):
         ).shift(prng.get_edge_center(RIGHT) + 0.1 * LEFT)
         self.play(
             prng_algo.set_input("10100110001", 1, no_text=True),
-            Create(prng_ar),
+            GrowArrow(prng_ar),
         )
         self.wait()
 
@@ -375,16 +380,16 @@ class BPP(Scene):
         )
         self.wait()
 
-        self.play(prng_algo.set_output("SAME"))
+        self.play(prng_algo.set_output("=", color=COLOR_SAME, scale=2))
         self.wait()
 
         self.play(prng_algo.set_input(r"$(x+1)^2 \overset{?}{=} (x-1)^2$", 0))
         self.wait()
 
-        self.play(prng_algo.set_output("?"))
+        self.play(prng_algo.set_output("?", scale=2))
         self.wait()
 
-        self.play(prng_algo.set_output("DIFFERENT"))
+        self.play(prng_algo.set_output(r"$\ne$", color=COLOR_DIFFERENT, scale=2))
         self.wait()
 
         prob_tex2 = (
@@ -397,7 +402,7 @@ class BPP(Scene):
         self.wait()
 
         self.play(
-            prng_algo.set_output("SAME"),
+            prng_algo.set_output("=", color=COLOR_SAME, scale=2),
             Transform(
                 prob_tex2,
                 Tex(r"p$\ge 99\%$")
@@ -409,6 +414,8 @@ class BPP(Scene):
         self.wait()
 
         algo_group2 = Group(prng_algo, prng, prng_ar, prob_tex2)
+        for i in [0, 1]:
+            algo.arrows[i].text.set_opacity(0)
         self.play(
             FadeOut(algo_group2),
             algo_group1.animate.move_to(ORIGIN),
@@ -439,7 +446,20 @@ class BPP(Scene):
         self.play(
             string.animate.set_color(BASE03).scale(0.5).next_to(algo.arrows[1], LEFT)
         )
-        algo.set_output("SAME", color=BASE03)
+        algo.set_output(r"$\ne$", scale=2, color=BASE03)
+        self.play(Write(algo.inputs[2].next_to(algo.arrows[2])))
+        ok_copy = (
+            VGroup(funnel.ticks[1], funnel.random[1])
+            .copy()
+            .set_opacity(1)
+            .shift(0.3 * UP)
+        )
+        verdict_copy = algo.inputs[2].copy()
+        self.play(verdict_copy.animate.become(ok_copy))
+        self.wait()
+        self.play(FadeOut(verdict_copy, algo.inputs[2]))
+
+        algo.set_output(r"$=$", scale=2, color=BASE03)
         self.play(Write(algo.inputs[2].next_to(algo.arrows[2])))
         ok_copy = (
             VGroup(funnel.ticks[0], funnel.random[0])
@@ -463,7 +483,7 @@ class BPP(Scene):
         self.wait()
 
         self.play(
-            prng_algo.set_output("DIFFERENT"),
+            algo.set_output(r"$\ne$", color=COLOR_DIFFERENT, scale=2),
             Transform(
                 prob_tex2,
                 Tex(r"$\ge 1\%$ probability")
