@@ -64,43 +64,48 @@ class Funnel(VGroup):
         self.add(self.wheel)
         self.label = label.set_z_index(2).align_to(self.poly, UP).shift(0.3 * DOWN)
         self.add(self.label)
+        self.string = None
 
-    def verdict(self, scene, verdict, side=False):
-        tick = self.ticks[verdict].set_opacity(1)
+    def verdict(self, verdict, simple=False):
+        tick = self.ticks[verdict]
         is_random = self.random[verdict]
-        if verdict == 1:
-            scene.add_sound("audio/polylog_success.wav")
-        else:
-            scene.add_sound("audio/polylog_failure.wav")
-        if side:
-            VGroup(tick, is_random).shift(2 * UR + 0.3 * DOWN)
-        scene.play(
-            FadeIn(tick, shift=DOWN, scale=0.3),
+
+        anims = [
             Succession(
-                Wait(0.5),
-                is_random.animate(run_time=0.001).set_opacity(1),
-                FadeIn(is_random),
-            ),
-        )
-        scene.wait(1)
-        return FadeOut(VGroup(tick, is_random))
+                tick.animate(run_time=0.001).set_opacity(1),
+                FadeIn(tick, shift=DOWN, scale=0.3, run_time=1.3),
+            )
+        ]
+        if not simple:
+            anims.append(
+                Succession(
+                    Wait(0.5),
+                    is_random.animate(run_time=0.001).set_opacity(1),
+                    FadeIn(is_random),
+                ),
+            )
+        return AnimationGroup(*anims)
 
-    def get_input_position(self, string):
-        return string.copy().next_to(self.poly, UP).origin()
+    def eat_string(self, string, run_time=1, scale=0.4):
+        scaled_up = self.poly.get_top() - self.poly.get_center()
+        target = self.poly.get_center() + scaled_up / 2
+        handle = target + 2 * scaled_up
+        handle[1] = min(handle[1], string.get_center()[1])
+        path = CubicBezier(string.get_center(), string.get_center(), handle, target)
+        self.string = string
+        self.add(string)
+        string.save_state()
 
-    def eat_string(self, string):
-        return (
-            string.animate.move_to(self.poly)
-            .align_to(self.poly, UP)
-            .shift(0.2 * DOWN)
-            .scale(0.4)
-        )
+        def alpha_func(obj, alpha):
+            obj.restore()
+            obj.scale(1 - (1 - scale) * alpha)
+            obj.move_to(path.point_from_proportion(alpha))
 
-    def thinking(self, talking=None):
+        return UpdateFromAlphaFunc(string, alpha_func, run_time=run_time)
+
+    def thinking(self, talking=None, run_time=3, cutoff=0.7):
         self.wheel.save_state()
         angular_velocity = -1.5
-        cutoff = 0.5
-        run_time = 3
         if type(talking) == str:
             talking = Tex(talking, tex_environment=None)
 
@@ -156,18 +161,41 @@ class Funnel(VGroup):
         disappear=True,
         think=True,
         add_string=True,
-        side=False,
+        simple=False,
     ):
         if type(string) == str:
             string = self.make_string(scene, string, add_string)
-        copy = string.copy()
-        scene.play(self.eat_string(string))
+        copy = string.copy().set_opacity(1)
+        self.add(copy)
+        scene.play(self.eat_string(copy))
         if think:
             scene.play(self.thinking(talking))
-        anims = [self.verdict(scene, verdict, side), FadeOut(string)]
+        scene.play(self.verdict(verdict, simple))
+
+        anims = [
+            FadeOut(copy),
+            VGroup(self.random, self.ticks).animate.set_opacity(0),
+        ]
         if disappear:
-            anims.append(FadeOut(copy))
+            anims.append(FadeOut(string))
         scene.play(*anims)
-        self.random.set_opacity(0)
-        self.ticks.set_opacity(0)
+        self.remove(copy)
         return copy
+
+    def feed_simple(self, string, verdict):
+        return Succession(
+            self.eat_string(string),
+            AnimationGroup(
+                self.thinking(run_time=3),
+                self.verdict(verdict, True),
+                lag_ratio=0.4,
+            ),
+        )
+
+    def hide_stuff(self, all=False):
+        self.string.set_opacity(0)
+        self.remove(self.string)
+        anims = [VGroup(self.random, self.ticks).animate.set_opacity(0)]
+        if all:
+            anims.append(FadeOut(VGroup(self.poly, self.label)))
+        return AnimationGroup(*anims)

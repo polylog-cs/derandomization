@@ -28,7 +28,7 @@ class PRNG(VGroup):
         )
         self.text = Tex(name, color=BASE2)
         if name == "NW":
-            self.text = Tex(r"{{Nissan-Wigderson \\}}{{ PRNG}}", color=BASE2)
+            self.text = Tex(r"{{Nisan-Wigderson \\}}{{ PRNG}}", color=BASE2)
             self.text[0].scale(0.5)
         self.add(self.box)
         self.add(self.text)
@@ -49,12 +49,16 @@ class PRNG(VGroup):
             new_seed = Tex(seed, color=BASE00)
         new_seed.move_to(self.box).next_to(self.box, LEFT, buff=buff)
 
+        if isinstance(self.seed, Dot):
+            self.seed = None
+            self.remove(self.seed)
+
         if self.seed is not None:
             old_seed = self.seed
             self.seed = new_seed
             self.add(self.seed)
             return LaggedStart(
-                old_seed.animate.shift(DOWN * 0.5).fade(1),
+                old_seed.animate.shift(DOWN * 0.5).set_opacity(0),
                 Write(new_seed),
             )
             # return self.seed.animate.become(new_seed)
