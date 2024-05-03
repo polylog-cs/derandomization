@@ -28,7 +28,7 @@ class StatisticalTest(Scene):
             talking=r"0: 50\,\%\\1: 50\,\%",
         )
         funnel2 = Funnel(
-            r"2-grams",
+            r"bigrams",
         ).move_to(funnel)
         self.play(FadeOut(funnel, shift=5 * LEFT), FadeIn(funnel2, shift=5 * LEFT))
         funnel2.feed_string(
@@ -309,9 +309,10 @@ class Pi(Scene):
                 r"""
 \textbf{Theorem} (Nisan-Wigderson PRNG):
 
-There is a pseudorandom generator that runs in polynomial time and its $n$~output bits pass all statistical tests running in time $n^{10}$.
+Assume that there is a problem solvable in time $2^{n}$ that cannot be solved with a circuit of size $2^{0.0001n}$.
 
-This holds if we assume that there is a problem solvable in time $2^{n}$ that cannot be solved  with a circuit of size $2^{0.0001n}$.
+Then, for any polynomial function $f(n)$, there is a pseudorandom generator that runs in polynomial time and its $n$~output bits pass all statistical tests running in time $f(n)$.
+
 """,
                 tex_environment=None,
             )

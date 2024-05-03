@@ -88,7 +88,7 @@ class TheoremStatement(Scene):
             Tex(t, color=text_color, font_size=50)
             for i, t in enumerate(
                 [
-                    "Under some assumptions that most people believe,",
+                    "Under an assumption that most people believe,",
                     r"any problem that can be solved\\"
                     r"efficiently with randomness\\"
                     r"can also be solved efficiently without it.",
@@ -103,7 +103,7 @@ class TheoremStatement(Scene):
 
         self.play(
             conclusion.animate.become(
-                Tex("$P = BPP$", color=text_color, font_size=80)
+                Tex("{{$P$}}{{$\,=\,$}}{{$BPP$}}", color=text_color, font_size=80)
                 .shift(DOWN * 0.3)
                 .shift(1 * DOWN)
             ),
@@ -124,6 +124,97 @@ class TheoremStatement(Scene):
         self.play(hypothesis.animate.become(hypothesis_formal))
         self.wait()
         self.play(hypothesis.animate.become(hypothesis_original))
+        self.wait()
+
+        conclusion[0].save_state()
+        self.play(
+            conclusion[0].animate.scale(3).next_to(conclusion[1], LEFT),
+        )
+        self.wait()
+
+        examples_tex = (
+            Tex(
+                r"{{\raggedright Sorting \\}}{{ Shortest path \\}}{{ $\dots$}}",
+                color=text_color,
+            )
+            .next_to(conclusion[0], LEFT)
+            .shift(0.5 * DOWN)
+        )
+        self.play(
+            AnimationGroup(
+                *[Write(e) for e in examples_tex],
+                lag_ratio=0.5,
+            )
+        )
+        self.wait()
+
+        conclusion[-1].save_state()
+        self.play(
+            conclusion[0].animate.restore(),
+            conclusion[-1].animate.scale(3).next_to(conclusion[1], RIGHT),
+        )
+        self.wait()
+
+        self.play(conclusion[-1].animate.restore())
+        self.wait()
+
+        examples2_tex = (
+            Tex(r"{{Polynomial testing}}{{?????}}", color=text_color)
+            .next_to(conclusion[2], RIGHT)
+            .shift(0.5 * RIGHT)
+        )
+
+        self.remove(conclusion)
+        conclusion = Tex(
+            r"{{$P$}}{{$\,\stackrel{?}{=}\,$}}{{$BPP$}}", font_size=80
+        ).move_to(conclusion)
+        Group(hypothesis, conclusion).shift(0.5 * UP)
+
+        self.add(conclusion)
+        self.remove(hypothesis, people[0], people[1])
+        self.wait()
+
+        self.play(
+            Write(examples2_tex[0]),
+        )
+        self.wait()
+
+        examples2_tex[0].save_state()
+        self.play(
+            examples2_tex[0].animate.align_to(examples_tex, DL).shift(0.1 * DOWN),
+            FadeOut(examples_tex[2]),
+        )
+        examples2_tex[1].next_to(examples2_tex[0], RIGHT)
+        self.play(Write(examples2_tex[1]))
+        self.wait()
+
+        self.play(
+            examples2_tex[0].animate.restore(),
+            FadeOut(examples2_tex[1]),
+        )
+        self.wait()
+
+        self.play(
+            Transform(
+                conclusion,
+                Tex(
+                    r"{{$P$}}{{$\,\stackrel{?}{\not=} \,$}}{{$BPP$}}", font_size=80
+                ).move_to(conclusion),
+            )
+        )
+        self.wait()
+
+        self.play(
+            FadeIn(people[0]),
+            FadeIn(people[1]),
+            Transform(
+                conclusion,
+                Tex(r"{{$P$}}{{$\,= \,$}}{{$BPP$}}", font_size=80).move_to(conclusion),
+            ),
+            Write(hypothesis.shift(0.5 * DOWN)),
+            FadeOut(examples_tex),
+            FadeOut(examples2_tex[0]),
+        )
         self.wait()
 
 
