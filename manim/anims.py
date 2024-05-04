@@ -277,7 +277,7 @@ class PolynomialsIntro(Scene):
             self.wait()
 
         same = Tex("Same polynomial!", color=GREEN, font_size=fs).next_to(
-            polynomials, RIGHT, buff=1
+            polynomials, RIGHT, buff=0.5
         )
         self.play(Write(same))
         self.wait()
@@ -504,14 +504,33 @@ class PolynomialsIntro2(Scene):
         # Create axes
         axes = (
             Axes(
-                x_range=[-3, 3],
-                y_range=[-5, 10],
+                x_range=[-3, 3, 1],  # x_min, x_max, x_step
+                y_range=[-5, 10, 1],  # y_min, y_max, y_step
+                x_length=7,
+                y_length=5,
                 axis_config={
-                    "include_ticks": False,  # Remove ticks
-                    "include_numbers": False,  # Remove numbers
-                    "color": text_color,
+                    # "color": BLUE,
+                    "include_ticks": False,  # Applies globally if not overridden
                 },
-                tips=False,
+                x_axis_config={
+                    "include_ticks": True,  # Enable ticks on x-axis
+                    "include_numbers": True,  # Enable number labels on x-axis
+                    "numbers_to_include": [
+                        -3,
+                        -2,
+                        -1,
+                        0,
+                        1,
+                        2,
+                        3,
+                    ],  # Specific numbers to label
+                    # k"number_scale_value": 0.5,  # Adjust the scale of numbers
+                },
+                y_axis_config={
+                    "include_ticks": False,  # Continue to remove ticks from y-axis
+                    "include_numbers": False,  # Continue to remove numbers from y-axis
+                },
+                tips=False,  # No arrow tips
             )
             .scale(0.7)
             .to_edge(DOWN, buff=0.5)

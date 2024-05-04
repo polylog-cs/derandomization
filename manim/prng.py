@@ -44,11 +44,11 @@ class PRNG(VGroup):
         # almost instantly. This looks nicer.
         return AnimationGroup(Create(self.box), Write(self.text))
 
-    def set_seed(self, seed: str, buff=1.5):
+    def set_seed(self, seed: str, buff=1.5, scale=1):
         if seed is None:
             new_seed = nil_object()
         else:
-            new_seed = Tex(seed, color=BASE00)
+            new_seed = Tex(seed, color=BASE00).scale(scale)
         new_seed.move_to(self.box).next_to(self.box, LEFT, buff=buff)
 
         if isinstance(self.seed, Dot):
@@ -73,7 +73,7 @@ class PRNG(VGroup):
                 end=self.box.get_edge_center(LEFT),
                 color=BASE00,
                 text="seed",
-                text_scale=label_scale,
+                text_scale=label_scale * scale,
             )
             self.add(self.seed_arrow)
             self.add(self.seed_arrow.text)
@@ -106,7 +106,7 @@ class Algo(VGroup):
         # almost instantly. This looks nicer.
         return AnimationGroup(Create(self.box), Write(self.text))
 
-    def set_input(self, input: str, pos: int, no_text=False):
+    def set_input(self, input: str, pos: int, no_text=False, write=True):
         if not input:
             new_input = nil_object()
         else:
@@ -123,7 +123,7 @@ class Algo(VGroup):
             self.add(self.inputs[pos])
             return LaggedStart(
                 old_input.animate.shift(DOWN * 0.5).fade(1),
-                Write(new_input),
+                (Write(new_input) if write else FadeIn(new_input)),
             )
 
         self.inputs[pos] = new_input
@@ -147,12 +147,12 @@ class Algo(VGroup):
             self.add(self.arrows[pos].text)
             # Create the arrow only once most of the text is written
             return LaggedStart(
-                Write(self.inputs[pos]),
+                (Write(self.inputs[pos]) if write else FadeIn(self.inputs[pos])),
                 Create(self.arrows[pos]),
                 lag_ratio=0.3,
             )
         else:
-            return Write(self.inputs[pos])
+            return Write(self.inputs[pos]) if write else FadeIn(self.inputs[pos])
 
     def set_output(self, output: str, color=BASE00, scale=1):
         if not output:
@@ -311,13 +311,100 @@ class BPP(Scene):
         self.play(Create(algo))
         self.wait()
 
-        self.play(algo.set_input(r"$(x+1)^2 \overset{?}{=} x^2 + 2x + 1$", 0))
+        self.play(
+            algo.set_input(
+                r"{{$($}}{{$x$}}{{$+1)^2 $}}{{$\,\overset{?}{=}\,$}}{{$ x$}}{{${}^2 + 2$}}{{$x$}}{{$\, + 1$}}",
+                0,
+            )
+        )
         self.wait()
 
         self.play(algo.set_input("1010101101100001", 1))
         self.wait()
 
-        self.play(algo.set_output("=", color=COLOR_SAME, scale=2))
+        prn = (
+            PRNG()
+            .scale(0.6)
+            .move_to(algo.inputs[1])
+            .next_to(algo.inputs[1], LEFT)
+            .shift(0.5 * LEFT)
+        )
+        # self.play(Write(prn))
+        # self.play(Circumscribe(prn.box))
+        # print(prn.box.get_center())
+        self.play(prn.set_seed("0110", buff=1, scale=0.8), run_time=0.0001)
+        prn_ar = Arrow(
+            start=ORIGIN,
+            end=1.0 * RIGHT,
+            color=BASE00,
+        ).shift(prn.get_edge_center(RIGHT) + 0.1 * LEFT)
+
+        self.play(
+            algo.set_input("1010011101010001", 1, no_text=True, write=False),
+            FadeIn(Group(prn, prn_ar)),
+        )
+        self.wait()
+
+        self.play(
+            Circumscribe(Group(*algo.inputs[0][0:2]), color=RED),
+            Circumscribe(Group(*algo.inputs[0][3:]), color=RED),
+        )
+        self.wait()
+
+        self.play(
+            algo.set_input("1010101101100001", 1, write=False),
+            FadeOut(Group(prn, prn_ar)),
+        )
+        self.wait()
+
+        self.play(
+            algo.set_input("1010011101010001", 1, no_text=True, write=False),
+            FadeIn(Group(prn, prn_ar)),
+        )
+        self.wait()
+
+        self.play(
+            algo.set_input("0000000000000000", 1, write=False),
+            FadeOut(Group(prn, prn_ar)),
+        )
+        self.wait()
+
+        forty = Tex(r"$42$", color=text_color).scale(1.3).to_edge(UP, buff=1.5)
+        self.play(Write(forty))
+
+        old_input = algo.inputs[0].copy()
+        new_input = (
+            Tex(
+                r"{{$($}}{{$42$}}{{$+1)^2 $}}{{$\,\overset{?}{=}\,$}}{{$ 42$}}{{${}^2 + 2\cdot $}}{{$42$}}{{$\, + 1$}}",
+                color=text_color,
+            )
+            .scale(0.7)
+            .move_to(old_input)
+            .align_to(old_input, RIGHT)
+        )
+        copies = [forty.copy() for _ in range(3)]
+        self.play(
+            Transform(algo.inputs[0], new_input),
+            *[
+                copy.animate.scale(1 / 1.3 * 0.7).move_to(new_input[i])
+                for i, copy in zip([1, 4, 6], copies)
+            ],
+        )
+        self.remove(*copies)
+        self.wait()
+        new_input2 = (
+            Tex(
+                r"{{$1849$}}{{$\,$}}{{$\overset{?}{=}$}}{{$\,$}}{{$1849$}}{{$\,$}}",
+                color=text_color,
+            )
+            .scale(0.7)
+            .move_to(old_input)
+            .align_to(old_input, RIGHT)
+        )
+        self.play(Transform(algo.inputs[0], new_input2))
+        self.wait()
+
+        self.play(algo.set_output("=", color=COLOR_SAME, scale=2), FadeOut(forty))
         self.wait()
 
         self.play(algo.set_input(r"$(x+1)^2 \overset{?}{=} (x-1)^2$", 0))
@@ -375,25 +462,25 @@ class BPP(Scene):
 
         self.play(
             prng_algo.set_input(
-                r"$(x+1)^2 \overset{?}{=} x^2 + 2x + 1$", 0, no_text=True
+                r"{{$(x+1)^2$}}{{$\, \overset{?}{=}\,$}}{{$ (x-1)^2$}}", 0, no_text=True
             )
         )
         self.wait()
 
-        self.play(prng_algo.set_output("=", color=COLOR_SAME, scale=2))
-        self.wait()
+        # self.play(prng_algo.set_output("=", color=COLOR_SAME, scale=2))
+        # self.wait()
 
-        self.play(prng_algo.set_input(r"$(x+1)^2 \overset{?}{=} (x-1)^2$", 0))
-        self.wait()
+        # self.play(prng_algo.set_input(r"$(x+1)^2 \overset{?}{=} (x-1)^2$", 0))
+        # self.wait()
 
-        self.play(prng_algo.set_output("?", scale=2))
-        self.wait()
+        # self.play(prng_algo.set_output("?", scale=2))
+        # self.wait()
 
         self.play(prng_algo.set_output(r"$\ne$", color=COLOR_DIFFERENT, scale=2))
         self.wait()
 
         prob_tex2 = (
-            Tex(r"$p\le 1\%$")
+            Tex(r"$p\ge 1\%$")
             .scale(label_scale)
             .next_to(prng_algo.inputs[2], DOWN)
             .align_to(prng_algo.inputs[2], LEFT)
@@ -402,10 +489,25 @@ class BPP(Scene):
         self.wait()
 
         self.play(
+            Circumscribe(prng_algo.inputs[0][0], color=RED),
+            Circumscribe(prng_algo.inputs[0][2], color=RED),
+        )
+        self.wait()
+
+        prob_tex2_new = (
+            Tex(r"$p< 1\%$")
+            .scale(label_scale)
+            .next_to(prng_algo.inputs[2], DOWN)
+            .align_to(prng_algo.inputs[2], LEFT)
+        )
+        self.play(Transform(prob_tex2, prob_tex2_new))
+        self.wait()
+
+        self.play(
             prng_algo.set_output("=", color=COLOR_SAME, scale=2),
             Transform(
                 prob_tex2,
-                Tex(r"p$\ge 99\%$")
+                Tex(r"p$> 99\%$")
                 .scale(label_scale)
                 .next_to(prng_algo.inputs[2], DOWN)
                 .align_to(prng_algo.inputs[2], LEFT),
@@ -470,7 +572,8 @@ class BPP(Scene):
         verdict_copy = algo.inputs[2].copy()
         self.play(verdict_copy.animate.become(ok_copy))
         self.wait()
-
+        self.play(FadeOut(verdict_copy))
+        self.wait()
         return
 
         ### TODO
