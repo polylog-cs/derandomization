@@ -8,7 +8,7 @@ class Polylogo(Scene):
     def construct(self):
         set_default_colors()
         authors = Tex(
-            r"\textbf{Richard Hladík, Filip Hlásek, Václav Rozhoň, Václav Volhejn}",
+            r"\textbf{Richard Hladík, Václav Rozhoň, Václav Volhejn}",
             color=text_color,
             font_size=40,
         ).shift(3 * DOWN + 0 * LEFT)
