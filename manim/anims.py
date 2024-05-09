@@ -1,6 +1,7 @@
 # manim -pql --fps 15 -r 290,180 anims.py Polylogo
 from pathlib import Path
 
+from prng import *
 from utils.util_general import *
 
 
@@ -35,11 +36,6 @@ class Polylogo(Scene):
 
         self.play(*[FadeOut(o) for o in self.mobjects])
         self.wait()
-
-
-class Playground(Scene):
-    def construct(self):
-        pass
 
 
 class TheoremStatement(Scene):
@@ -238,6 +234,78 @@ class ShowCode(Scene):
         self.wait()
 
         self.wait(5)
+
+
+class PrngIntro(Scene):
+    def construct(self):
+        set_default_colors()
+
+        prng = PRNG().shift(1 * LEFT)
+        self.play(FadeIn(prng))
+        self.wait()
+        self.play(prng.set_seed("0110"))
+        self.wait()
+
+        ar = Arrow(
+            start=prng.box.get_right(),
+            end=prng.box.get_right() + 1.5 * RIGHT,
+            color=text_color,
+        )
+        self.play(Create(ar))
+
+        # create a tex object with 5 lines, each containing 10 random bits
+        pseudorandom_str = r"\raggedright "
+        for i in range(10):
+            pseudorandom_str += (
+                r"$" + "".join([str(random.randint(0, 1)) for _ in range(24)]) + r"$"
+            )
+            pseudorandom_str += r"\\ "
+
+        pseudorandom_tex = Tex(
+            pseudorandom_str, color=text_color, font_size=40
+        ).next_to(ar, RIGHT)
+
+        self.play(Write(pseudorandom_tex), run_time=5)
+        self.wait()
+        not_random_tex = (
+            Tex(r"{{Not random!}}", color=text_color, font_size=60)
+            .next_to(pseudorandom_tex, UP, buff=0.5)
+            .shift(1 * LEFT)
+        )
+
+        bf = 0.7
+
+        self.play(
+            FadeOut(prng),
+            FadeOut(ar),
+            Write(not_random_tex),
+            pseudorandom_tex.animate.shift(1 * LEFT),
+        )
+        self.wait()
+
+        pseudorandom_str = r"\raggedright "
+        for i in range(10):
+            pseudorandom_str += (
+                r"$" + "".join([str(random.randint(0, 1)) for _ in range(24)]) + r"$"
+            )
+            pseudorandom_str += r"\\ "
+
+        random_tex = Tex(pseudorandom_str, color=text_color, font_size=40).move_to(
+            -1 * pseudorandom_tex.get_center()
+        )
+        is_random_tex = Tex(r"{{Random}}", color=text_color, font_size=60).next_to(
+            random_tex, UP, buff=0.5
+        )
+
+        self.play(Write(random_tex), Write(is_random_tex), run_time=1)
+        self.wait()
+
+        # hard_tex = Tex(r"Hard to \\ distinguish", color=text_color, font_size=50)
+        # self.play(
+        #     Write(hard_tex),
+        #     run_time = 1
+        #     )
+        # self.wait()
 
 
 fs = 50
