@@ -297,7 +297,6 @@ class BPP(Scene):
         COLOR_SAME = GREEN
         COLOR_DIFFERENT = RED
 
-        # self.next_section(skip_animations=True)
         plan_tex = Tex(
             r"Pseudorandom generator $\implies \text{P} = \text{BPP}$.  "
         ).shift(2 * UP)
@@ -346,8 +345,8 @@ class BPP(Scene):
         self.wait()
 
         self.play(
-            Circumscribe(Group(*algo.inputs[0][0:2]), color=RED),
-            Circumscribe(Group(*algo.inputs[0][3:]), color=RED),
+            Circumscribe(Group(*algo.inputs[0][0:3]), color=RED),
+            Circumscribe(Group(*algo.inputs[0][4:]), color=RED),
         )
         self.wait()
 
@@ -407,7 +406,10 @@ class BPP(Scene):
         self.play(algo.set_output("=", color=COLOR_SAME, scale=2), FadeOut(forty))
         self.wait()
 
-        self.play(algo.set_input(r"$(x+1)^2 \overset{?}{=} (x-1)^2$", 0))
+        self.play(
+            algo.set_input(r"$(x+1)^2 \overset{?}{=} (x-1)^2$", 0),
+            algo.set_input("1010101101100001", 1, write=False),
+        )
         self.wait()
 
         self.play(algo.set_output(r"$\ne$", color=COLOR_DIFFERENT, scale=2))
@@ -500,6 +502,8 @@ class BPP(Scene):
             .next_to(prng_algo.inputs[2], DOWN)
             .align_to(prng_algo.inputs[2], LEFT)
         )
+        recc = SurroundingRectangle(prob_tex2_new, color=RED)
+        self.play(Create(recc))
         self.play(Transform(prob_tex2, prob_tex2_new))
         self.wait()
 
@@ -512,8 +516,11 @@ class BPP(Scene):
                 .next_to(prng_algo.inputs[2], DOWN)
                 .align_to(prng_algo.inputs[2], LEFT),
             ),
+            FadeOut(recc),
         )
         self.wait()
+
+        self.next_section(skip_animations=False)
 
         algo_group2 = Group(prng_algo, prng, prng_ar, prob_tex2)
         for i in [0, 1]:
@@ -522,8 +529,6 @@ class BPP(Scene):
             FadeOut(algo_group2),
             algo_group1.animate.move_to(ORIGIN),
         )
-
-        self.next_section()
 
         self.play(
             algo.set_input("", 1),
@@ -542,6 +547,11 @@ class BPP(Scene):
             .set_label_color(BASE03),
         )
 
+        self.play(
+            Circumscribe(algo.inputs[0], color=RED),
+        )
+        self.wait()
+
         string = funnel.make_string(self, "10100110001")
         string_copy = string.copy()
         self.add(string_copy)
@@ -559,7 +569,36 @@ class BPP(Scene):
         verdict_copy = algo.inputs[2].copy()
         self.play(verdict_copy.animate.become(ok_copy))
         self.wait()
-        self.play(FadeOut(verdict_copy, algo.inputs[2]))
+
+        comment = (
+            Tex(r"$\ge 99\%$ probability \\ for random bits", color=text_color)
+            .next_to(algo.inputs[2], DOWN, buff=1)
+            .shift(1 * RIGHT)
+        )
+        ar_comment = Arrow(
+            start=comment.get_edge_center(UP),
+            end=algo.inputs[2].get_edge_center(DOWN),
+            color=text_color,
+        )
+        self.play(Write(comment), Create(ar_comment))
+        self.wait()
+        comment.generate_target()
+        comment.target.shift(2 * DOWN)
+        self.play(
+            MoveToTarget(comment),
+            Transform(
+                ar_comment,
+                Arrow(
+                    start=comment.target.get_edge_center(LEFT),
+                    end=comment.target.get_edge_center(LEFT) + 1.5 * LEFT,
+                    color=text_color,
+                ),
+            ),
+        )
+        self.wait()
+
+        self.play(FadeOut(verdict_copy, algo.inputs[2], comment, ar_comment))
+        self.wait()
 
         algo.set_output(r"$=$", scale=2, color=BASE03)
         self.play(Write(algo.inputs[2].next_to(algo.arrows[2])))
@@ -572,8 +611,97 @@ class BPP(Scene):
         verdict_copy = algo.inputs[2].copy()
         self.play(verdict_copy.animate.become(ok_copy))
         self.wait()
-        self.play(FadeOut(verdict_copy))
+
+        comment = (
+            Tex(
+                r"$\ge 99\%$ probability \\ for Nissan-Wigderson \\ pseudorandom bits",
+                color=text_color,
+            )
+            .next_to(algo.inputs[2], DOWN, buff=1)
+            .shift(1 * RIGHT)
+        )
+        ar_comment = Arrow(
+            start=comment.get_edge_center(UP),
+            end=algo.inputs[2].get_edge_center(DOWN),
+            color=text_color,
+        )
+        self.play(Write(comment), Create(ar_comment))
         self.wait()
+        comment.generate_target()
+        comment.target.shift(2 * DOWN)
+        self.play(
+            MoveToTarget(comment),
+            Transform(
+                ar_comment,
+                Arrow(
+                    start=comment.target.get_edge_center(LEFT),
+                    end=comment.target.get_edge_center(LEFT) + 1.5 * LEFT,
+                    color=text_color,
+                ),
+            ),
+        )
+        self.wait()
+
+        self.play(
+            FadeOut(verdict_copy),
+            FadeOut(comment),
+            FadeOut(ar_comment),
+            FadeOut(string),
+            FadeOut(string_copy),
+        )
+        self.wait()
+
+        images = (
+            Group(
+                *[
+                    ImageMobject("img/" + str + ".jpg").scale_to_fit_height(2)
+                    for str in ["nisan", "wigderson"]
+                ]
+            )
+            .arrange(RIGHT, buff=0.1)
+            .to_edge(LEFT)
+        )
+        cross_tex = Tex(r"$\times$", color=RED).scale(18).move_to(funnel).shift(2 * UP)
+        self.play(FadeIn(images))
+        self.play(arrive_from(cross_tex, UP))
+        self.wait()
+        self.play(
+            FadeOut(images),
+            FadeOut(cross_tex),
+            FadeOut(funnel),
+            algo.animate.move_to(ORIGIN).set_label_color(text_color),
+        )
+        self.wait()
+
+        prng.scale(0.7).move_to(algo.get_corner(DL) + 1.8 * LEFT + 0.45 * UP)
+        prng_ar = Arrow(
+            start=ORIGIN,
+            end=1.0 * RIGHT,
+            color=BASE00,
+        ).shift(prng.get_edge_center(RIGHT) + 0.1 * LEFT)
+        prng_ar2 = Arrow(
+            start=ORIGIN,
+            end=1.0 * RIGHT,
+            color=BASE00,
+        ).next_to(prng.box, LEFT, buff=0.1)
+
+        self.play(
+            Create(prng),
+            GrowArrow(prng_ar2),
+            Write(Tex(r"0110", color=text_color).scale(0.7).next_to(prng_ar2, LEFT)),
+            Write(
+                Tex(r"10100110001", color=text_color).scale(0.7).next_to(prng_ar, RIGHT)
+            ),
+            GrowArrow(prng_ar),
+        )
+        self.wait()
+
+        more = (
+            Tex(r"$p\ge 1\%$", color=text_color)
+            .next_to(algo.inputs[2], DOWN, buff=1)
+            .shift(1 * RIGHT)
+        )
+        self.play(Write(more))
         return
 
         ### TODO
@@ -595,3 +723,8 @@ class BPP(Scene):
             ),
         )
         self.wait()
+
+
+class BPPafter(Scene):
+    def construct(self):
+        set_default_colors()

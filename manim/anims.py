@@ -221,7 +221,22 @@ class TheoremStatement(Scene):
 class ShowCode(Scene):
     def construct(self):
         text = Path("../code/get_random_bits2.py").read_text()
-        self.add(make_code(text))
+        code = make_code(text).to_edge(RIGHT)
+
+        self.play(FadeIn(code))
+        self.wait()
+
+        ar = Arrow(
+            start=1.5 * LEFT,
+            end=ORIGIN,
+            color=RED,
+        ).next_to(code[2][5], LEFT)
+
+        self.play(Create(ar))
+        self.wait()
+        self.play(ar.animate.next_to(code[2][-1], LEFT))
+        self.wait()
+
         self.wait(5)
 
 
@@ -285,6 +300,98 @@ class PolynomialsIntro(Scene):
             *[FadeOut(o) for o in self.mobjects],
         )
         self.wait()
+
+
+class PolynomialsMultiplyingOut(Scene):
+    def construct(self):
+        set_default_colors()
+        self.next_section(skip_animations=False)
+
+        len = 20
+        polynomials = []
+        polynomials.append(
+            [
+                Tex(r"$(x+2)^{20\,000}$", color=text_color, font_size=fs),
+                Tex(r"$(x+1)^{10\,000}\cdot$", color=text_color, font_size=fs),
+                *[
+                    Tex(r"$(x+1)\cdot$", color=text_color, font_size=fs)
+                    for _ in range(len)
+                ],
+            ]
+        )
+        polynomials.append(
+            [
+                Tex(r"$.$", color=text_color, font_size=fs).scale(0.0001),
+                Tex(
+                    r"$(x^3 + 5x^2 + 8x + 5)^{10\,000}$", color=text_color, font_size=fs
+                ),
+                *[
+                    Tex(r"$(x^3 + 5x^2 + 8x + 5)\cdot$", color=text_color, font_size=fs)
+                    for _ in range(len)
+                ],
+            ]
+        )
+
+        bf = 0.1
+        self.play(
+            FadeIn(
+                Group(polynomials[0][1], polynomials[0][0])
+                .arrange(RIGHT, buff=bf)
+                .shift(0.5 * UP)
+            ),
+            FadeIn(
+                Group(polynomials[1][1], polynomials[1][0])
+                .arrange(RIGHT, buff=bf)
+                .shift(0.5 * DOWN)
+            ),
+        )
+        self.wait()
+
+        for i in range(0, len):
+            new_polynomials = [
+                Tex(
+                    r"$(x+1)^{" + str(10000 - i - 1) + r"}\cdot$",
+                    color=text_color,
+                    font_size=fs,
+                ),
+                Tex(
+                    r"$(x^3 + 5x^2 + 8x + 5)^{" + str(10000 - i - 1) + r"}\cdot$",
+                    color=text_color,
+                    font_size=fs,
+                ),
+            ]
+            for it in range(2):
+                polynomials[it][0].generate_target()
+                polynomials[it][0].target.shift(0.4 * RIGHT)
+                polynomials[it][1].generate_target()
+                polynomials[it][1].target = new_polynomials[it].next_to(
+                    polynomials[it][0].target, LEFT, buff=bf
+                )
+
+                polynomials[it][2 + i].next_to(polynomials[it][1].target, LEFT, buff=bf)
+                polynomials[it][2 + i].generate_target()
+
+                for j in range(i - 1, -1, -1):
+                    polynomials[it][2 + j].generate_target()
+                    polynomials[it][2 + j].target.next_to(
+                        polynomials[it][2 + j + 1].target, LEFT, buff=bf
+                    )
+
+            anims = []
+            for it in range(1):
+                anims += [
+                    MoveToTarget(polynomials[it][0]),
+                    MoveToTarget(polynomials[it][1]),
+                    *[
+                        MoveToTarget(polynomials[it][2 + j]) for j in range(i)
+                    ],  # Simplified range
+                    Create(polynomials[it][2 + i]),
+                ]
+
+            self.play(
+                *anims,
+                run_time=0.3,  # Correct placement and formatting of run_time
+            )
 
 
 class PolynomialsIntro2(Scene):

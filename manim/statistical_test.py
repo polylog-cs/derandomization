@@ -106,7 +106,8 @@ class Pi(Scene):
                     .next_to(rand_string_tex, LEFT, buff=1.5)
                 )
                 self.play(Create(prng))
-                self.play(prng.set_seed(None))
+                # self.play(prng.set_seed(None))
+                self.wait()
                 prng_ar = Arrow(
                     start=prng.get_right(),
                     end=rand_string_tex.get_left(),
@@ -195,7 +196,12 @@ class Pi(Scene):
         )
 
         subpi = pi[0][idx + 3 : idx + 3 + 16].copy()
-        self.play(Circumscribe(subpi, color=RED))
+        # create Line below subpi
+        line = Line(subpi.get_left(), subpi.get_right(), color=RED).next_to(
+            subpi, DOWN, buff=0.1
+        )
+        # self.play(Circumscribe(subpi, color=RED))
+        self.play(Create(line))
         self.play(subpi.animate.next_to(prng_ar, RIGHT, buff=0.3))
         self.wait()
 
@@ -209,7 +215,9 @@ class Pi(Scene):
         self.wait()
 
         self.funnel.scale(0.8).shift(0.3 * DOWN)
-        self.play(FadeIn(self.funnel), FadeOut(brace_subpi), FadeOut(brace_k))
+        self.play(
+            FadeIn(self.funnel), FadeOut(brace_subpi), FadeOut(brace_k), FadeOut(line)
+        )
         # subpi.save_state()
         # self.play(subpi.animate.scale(1.2 * 0.8).next_to(self.funnel, UP, buff=0.3))
 
