@@ -575,5 +575,54 @@ class PseudocodeBruteforce(Scene):
             Path("../code/bruteforce_all_seeds.tex").read_text(),
             tex_environment=None,
         )
-        self.add(pseudocode)
+        self.play(FadeIn(pseudocode), run_time=1)
         self.wait(3)
+
+        pos1 = 5 * LEFT + 0.1 * UP
+        ar = Arrow(start=pos1, end=pos1 + 1.5 * RIGHT, color=RED)
+        self.play(Create(ar), run_time=1)
+        self.wait()
+        self.play(ar.animate.shift(1.15 * DOWN), run_time=1)
+        self.wait()
+        self.play(ar.animate.shift(0.66 * DOWN), run_time=1)
+        self.wait(3)
+
+
+class Final(Scene):
+    def construct(self):
+        thanks_text = "Big thanks to everyone who gave us feedback on an early version of this video!"
+        patrons_thanks_text = "Our amazing Patrons:"
+        patrons_text = [
+            "Thomas Dubach",
+            "Adam Zielinski",
+            "Mika chu",
+            "Hugo Madge León",
+            "George Chahir",
+            "Anh Dung Le",
+            "Adam Dřínek",
+            "Amit Nambiar",
+            "Pepa Tkadlec",
+            "sjbtrn",
+            "George Mihaila",
+            "Tomáš Sláma",
+        ]
+        support_tex = "Thank you for your support!"
+
+        thanks_tex = Tex(thanks_text, color=TEXT_COLOR).scale(0.8).to_edge(UP)
+        patrons_thanks_tex = (
+            Tex(patrons_thanks_text, color=TEXT_COLOR)
+            .scale(0.8)
+            .next_to(thanks_tex, DOWN, buff=1)
+        )
+        patrons_tex = (
+            VGroup(*[Tex(t, color=TEXT_COLOR).scale(0.8) for t in patrons_text])
+            .arrange_in_grid(cell_alignment=LEFT)
+            .next_to(patrons_thanks_tex, DOWN, buff=0.5)
+        )
+        support_tex = (
+            Tex(support_tex, color=TEXT_COLOR)
+            .scale(1.2)
+            .next_to(patrons_tex, DOWN, buff=1)
+        )
+        self.add(patrons_thanks_tex, patrons_tex, support_tex)
+        self.wait(5)
