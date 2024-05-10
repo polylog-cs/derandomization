@@ -947,3 +947,12 @@ class AfterRecap(Scene):
         )
         self.play(FadeIn(bracetext))
         self.wait()
+
+
+class ZeroKnowledge(Scene):
+    def construct(self):
+        set_default_colors()
+
+        zero_tex = Tex(r"Zero-knowledge proofs", color=text_color, font_size=100)
+        self.play(Write(zero_tex))
+        self.wait()
