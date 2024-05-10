@@ -243,9 +243,12 @@ class PrngIntro(Scene):
         prng = PRNG().shift(1 * LEFT)
         self.play(FadeIn(prng))
         self.wait()
-        self.play(prng.set_seed("0110"))
+        prng.set_seed("0110")
+        self.play(
+            Write(prng.seed),
+            Create(prng.seed_arrow),
+        )
         self.wait()
-
         ar = Arrow(
             start=prng.box.get_right(),
             end=prng.box.get_right() + 1.5 * RIGHT,

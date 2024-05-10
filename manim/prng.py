@@ -78,10 +78,10 @@ class PRNG(VGroup):
             self.add(self.seed_arrow)
             self.add(self.seed_arrow.text)
             # Create the arrow only once most of the text is written
-            return LaggedStart(
+            return AnimationGroup(
                 Write(self.seed),
                 Create(self.seed_arrow),
-                lag_ratio=0.3,
+                # lag_ratio=0.3,
             )
         else:
             return Write(self.seed)
