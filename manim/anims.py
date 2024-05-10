@@ -914,6 +914,36 @@ class Recap(Scene):
         self.wait()
 
 
-class Recap(Scene):
+class AfterRecap(Scene):
     def construct(self):
         set_default_colors()
+
+        algo = Algo().shift(20 * RIGHT)
+        prng = PRNG("NW").scale(0.8).shift(20 * RIGHT)
+        self.play(
+            algo.set_input(r".", 0, no_text=True),
+            algo.set_input(r"00001101111", 1, no_text=True),
+            algo.set_output(r"."),
+            prng.set_seed("10110"),
+            run_time=0.001,
+        )
+        ar = algo.arrows[0].copy().next_to(algo.inputs[1], LEFT, buff=0.2)
+        prng.next_to(ar, LEFT, buff=0.2)
+        t = Group(algo, prng, ar)
+        self.remove(t)
+        self.play(FadeIn(t.scale(0.8).move_to(ORIGIN)))
+        self.wait()
+
+        self.play(
+            Circumscribe(prng.seed, color=RED),
+        )
+
+        bracetext = BraceText(
+            prng.seed,
+            r"$O(\log n)$ bits",
+            brace_direction=UP,
+            color=text_color,
+            buff=0.1,
+        )
+        self.play(FadeIn(bracetext))
+        self.wait()
