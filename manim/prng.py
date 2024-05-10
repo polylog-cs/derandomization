@@ -111,7 +111,7 @@ class Algo(VGroup):
             new_input = nil_object()
         else:
             new_input = (
-                Tex(input, color=BASE00)
+                Tex(input, color=(BASE00 if input != "." else BACKGROUND_COLOR))
                 .scale(label_scale)
                 .next_to(self.box, LEFT, buff=1.5)
                 .shift((-1 + 2 * pos) * label_scale * self.box.height * 0.5 * DOWN)
@@ -159,7 +159,7 @@ class Algo(VGroup):
             new_output = nil_object()
         else:
             new_output = (
-                Tex(output, color=color)
+                Tex(output, color=(BASE00 if output != "." else BACKGROUND_COLOR))
                 .scale(label_scale * scale)
                 .next_to(self.box, RIGHT, buff=1.5)
             )
@@ -723,8 +723,3 @@ class BPP(Scene):
             ),
         )
         self.wait()
-
-
-class BPPafter(Scene):
-    def construct(self):
-        set_default_colors()

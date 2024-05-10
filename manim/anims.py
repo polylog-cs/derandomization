@@ -801,3 +801,111 @@ class Final(Scene):
         )
         self.add(patrons_thanks_tex, patrons_tex, support_tex)
         self.wait(5)
+
+
+class Recap(Scene):
+    def construct(self):
+        set_default_colors()
+
+        prng = PRNG("NW").scale(0.8)
+        truly = Tex(r"Random bits", color=text_color, font_size=fs)
+
+        bits = []
+        for i in range(2):
+            bits_str = ""
+            for j in range(3):
+                bits_str += (
+                    "".join([str(random.randint(0, 1)) for _ in range(20)]) + r" \\ "
+                )
+            bits.append(Tex(bits_str, color=text_color, font_size=40))
+
+        truly_group = Group(truly, bits[0]).arrange(DOWN, buff=0.5)
+        prng_group = Group(prng, bits[1]).arrange(DOWN, buff=0.5)
+
+        all_group = Group(truly_group, prng_group).arrange(RIGHT, buff=3)
+        prng_group.to_edge(UP, buff=0.5)
+        truly_group.align_to(prng_group, DOWN)
+
+        self.play(FadeIn(prng), Write(bits[1]))
+        self.wait()
+
+        self.play(FadeIn(truly), Write(bits[0]))
+        self.wait()
+
+        truly_algo = Algo().move_to(20 * RIGHT)
+        self.add(truly_algo)
+        self.play(
+            truly_algo.set_input(
+                r"{{$(x+1)^2$}}{{$\, \overset{?}{=}\,$}}{{$ (x-1)^2$}}", 0, no_text=True
+            ),
+            truly_algo.set_input(r".", 1, no_text=True),
+            truly_algo.set_output(
+                r".",
+            ),
+            run_time=0.0001,
+        )
+        self.remove(truly_algo)
+        truly_algo.scale(0.6).next_to(truly_group, DOWN, buff=1)
+
+        self.play(
+            FadeIn(truly_algo),
+        )
+        self.wait()
+        truly_bits = bits[0].copy()
+        self.play(
+            truly_bits.animate.scale(0.5).next_to(truly_algo.arrows[1], LEFT, buff=0.2)
+        )
+        self.wait()
+
+        prng_algo = truly_algo.copy()
+        self.play(prng_algo.animate.next_to(prng_group, DOWN, buff=1))
+        self.wait()
+
+        prng_bits = bits[1].copy()
+        self.play(
+            prng_bits.animate.scale(0.5).next_to(prng_algo.arrows[1], LEFT, buff=0.2)
+        )
+        self.wait()
+
+        truly_p = (
+            Tex(r"$p > 99\%$", color=text_color)
+            .scale(0.7)
+            .next_to(truly_algo.inputs[2], DOWN, buff=0.5)
+        )
+        truly_n = (
+            Tex(r"$\not =$", color=text_color)
+            .scale(0.7)
+            .next_to(truly_algo.arrows[2], RIGHT, buff=0.2)
+        )
+        self.play(Write(truly_n), Write(truly_p))
+        self.wait()
+
+        prng_p = (
+            Tex(r"$p < 1\%$", color=text_color)
+            .scale(0.7)
+            .next_to(prng_algo.inputs[2], DOWN, buff=0.5)
+        )
+        prng_n = (
+            Tex(r"$\not =$", color=text_color)
+            .scale(0.7)
+            .next_to(prng_algo.arrows[2], RIGHT, buff=0.2)
+        )
+        self.play(Write(prng_n), Write(prng_p))
+        self.wait()
+
+        rectangles = [SurroundingRectangle(p, color=RED) for p in [truly_p, prng_p]]
+        self.play(*[Create(r) for r in rectangles])
+        self.wait()
+
+        self.play(*[FadeOut(r) for r in rectangles])
+        self.wait()
+
+        self.play(
+            Create(rectangles[1]),
+        )
+        self.play(
+            Transform(
+                prng_p, Tex(r"$p \ge 1\%$", color=text_color).scale(0.7).move_to(prng_p)
+            )
+        )
+        self.wait()
