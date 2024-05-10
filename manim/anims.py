@@ -757,7 +757,10 @@ class PseudocodeBruteforce(Scene):
         ar = Arrow(start=pos1, end=pos1 + 1.5 * RIGHT, color=RED)
         self.play(Create(ar), run_time=1)
         self.wait()
-        self.play(ar.animate.shift(1.15 * DOWN), run_time=1)
+        x = 0.66
+        self.play(ar.animate.shift(x * DOWN), run_time=1)
+        self.wait()
+        self.play(ar.animate.shift((1.15 - x) * DOWN), run_time=1)
         self.wait()
         self.play(ar.animate.shift(0.66 * DOWN), run_time=1)
         self.wait(3)
@@ -909,3 +912,8 @@ class Recap(Scene):
             )
         )
         self.wait()
+
+
+class Recap(Scene):
+    def construct(self):
+        set_default_colors()
