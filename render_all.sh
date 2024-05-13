@@ -10,5 +10,5 @@ cd manim/
 filenames="anims.py prng.py statistical_test.py"
 
 for filename in $filenames; do
-    manim -qh $filename --write_all
+	manim -qk $filename --write_all
 done
