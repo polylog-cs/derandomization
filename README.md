@@ -1,3 +1,3 @@
 # Derandomization
 
-aka "Why Avi Wigderson deserves the Turing Award"
+aka "And this year’s Turing Award goes to…"
